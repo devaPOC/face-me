@@ -18,6 +18,12 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
   const [localName, setLocalName] = useState('');
   const [remoteName, setRemoteName] = useState('');
 
+  // Device Management State
+  const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
+  const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedAudioId, setSelectedAudioId] = useState<string>('');
+  const [selectedVideoId, setSelectedVideoId] = useState<string>('');
+
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -36,6 +42,16 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     };
   }, [localStream]);
 
+  const loadDevices = async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      setAudioDevices(devices.filter(d => d.kind === 'audioinput'));
+      setVideoDevices(devices.filter(d => d.kind === 'videoinput'));
+    } catch (err) {
+      console.error('Failed to enumerate devices', err);
+    }
+  };
+
   const connect = async (userName: string) => {
     setLocalName(userName);
     
@@ -49,6 +65,16 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     try {
       stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       setLocalStream(stream);
+
+      // Load available devices
+      await loadDevices();
+
+      // Set initial selected devices
+      const audioTrack = stream.getAudioTracks()[0];
+      const videoTrack = stream.getVideoTracks()[0];
+      if (audioTrack) setSelectedAudioId(audioTrack.getSettings().deviceId || '');
+      if (videoTrack) setSelectedVideoId(videoTrack.getSettings().deviceId || '');
+
     } catch (err) {
       console.error('Error accessing media devices:', err);
       return;
@@ -129,6 +155,54 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     };
   };
 
+  const switchDevice = useCallback(async (kind: 'audio' | 'video', deviceId: string) => {
+    if (!localStream || !pcRef.current) return;
+
+    try {
+      const constraints = kind === 'audio' 
+        ? { audio: { deviceId: { exact: deviceId } }, video: false }
+        : { audio: false, video: { deviceId: { exact: deviceId } } };
+
+      const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+      const newTrack = kind === 'audio' ? newStream.getAudioTracks()[0] : newStream.getVideoTracks()[0];
+      
+      const oldTrack = kind === 'audio' ? localStream.getAudioTracks()[0] : localStream.getVideoTracks()[0];
+      
+      // Replace track in peer connection
+      const sender = pcRef.current.getSenders().find(s => s.track?.kind === kind);
+      if (sender) {
+        await sender.replaceTrack(newTrack);
+      }
+
+      // Update local stream state
+      localStream.removeTrack(oldTrack);
+      localStream.addTrack(newTrack);
+      setLocalStream(new MediaStream(localStream.getTracks()));
+
+      // Stop old track
+      oldTrack.stop();
+
+      // Apply current mute state to the newly created track
+      if (kind === 'audio') {
+        newTrack.enabled = !isMuted;
+        setSelectedAudioId(deviceId);
+      } else {
+        newTrack.enabled = !isVideoOff;
+        setSelectedVideoId(deviceId);
+      }
+
+    } catch (err) {
+      console.error(`Failed to switch ${kind} device`, err);
+    }
+  }, [localStream, isMuted, isVideoOff]);
+
+  const flipCamera = useCallback(async () => {
+    if (videoDevices.length < 2) return;
+    const currentIndex = videoDevices.findIndex(d => d.deviceId === selectedVideoId);
+    const nextIndex = (currentIndex + 1) % videoDevices.length;
+    await switchDevice('video', videoDevices[nextIndex].deviceId);
+  }, [videoDevices, selectedVideoId, switchDevice]);
+
   const admitGuest = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ type: 'admit', payload: { name: localName } }));
@@ -179,6 +253,12 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     isMuted,
     isVideoOff,
     remoteHandRaised,
+    audioDevices,
+    videoDevices,
+    selectedAudioId,
+    selectedVideoId,
+    switchDevice,
+    flipCamera,
     connect,
     admitGuest,
     rejectGuest,
