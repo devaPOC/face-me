@@ -1,6 +1,6 @@
 # FaceMe — Peer-to-Peer FaceTime Clone
 
-FaceMe is a production-ready, ultra-low-resource, strict 1-to-1 peer-to-peer video calling application. 
+FaceMe is a production-ready, ultra-low-resource, strict 1-to-1 peer-to-peer video calling application.
 
 It is designed to showcase modern web technologies, including **WebRTC** for direct browser-to-browser media streaming, **Next.js** for a fluid and premium front-end experience, and **Go** for a high-concurrency, zero-persistence signaling backend.
 
@@ -33,13 +33,13 @@ graph TD
     classDef file fill:#0284C7,stroke:#0369A1,stroke-width:2px,color:#fff;
 
     Root["face-me/"]:::dir
-    
+
     %% Root Files
     Readme["README.md<br>(Main Documentation)"]:::file
     Docker["docker-compose.yml<br>(Compose Orchestrator)"]:::file
     Root --> Readme
     Root --> Docker
-    
+
     %% Docs
     Docs["docs/"]:::dir
     Arch["architecture.md<br>(Flows & Topology)"]:::file
@@ -49,7 +49,7 @@ graph TD
     Docs --> Arch
     Docs --> Setup
     Docs --> Api
-    
+
     %% Backend
     Backend["backend/"]:::dir
     Main["main.go<br>(Server Entrypoint)"]:::file
@@ -59,7 +59,7 @@ graph TD
     Backend --> Main
     Backend --> GoMod
     Backend --> Internal
-    
+
     %% Frontend
     Frontend["frontend/"]:::dir
     Pkg["package.json"]:::file
@@ -69,7 +69,7 @@ graph TD
     Frontend --> Pkg
     Frontend --> NextCfg
     Frontend --> Src
-    
+
     App["app/<br>(Pages & Layouts)"]:::dir
     Hooks["hooks/<br>(WebRTC Context & Loop)"]:::dir
     Comp["components/<br>(UI Buttons & Frames)"]:::dir
@@ -82,7 +82,7 @@ graph TD
 
 ## 🧩 High-Level System Architecture
 
-FaceMe streams media directly between browser peers. The backend server acts only as a signaling broker to coordinate connection descriptors (SDP) and connection paths (ICE). 
+FaceMe streams media directly between browser peers. The backend server acts only as a signaling broker to coordinate connection descriptors (SDP) and connection paths (ICE).
 
 Once the signaling handshake completes, the audio/video bytes flow directly between browser clients, ensuring complete media privacy and saving server bandwidth.
 
@@ -96,11 +96,11 @@ graph LR
     GoServer["Go Signaling Server<br>(Cloudflare Tunnel Broker)"]:::server
 
     %% Handshake Flow
-    ClientA <-->|1. Signaling WebSocket| GoServer
-    ClientB <-->|2. Signaling WebSocket| GoServer
+    ClientA -->|1. Signaling WebSocket| GoServer
+    ClientB -->|2. Signaling WebSocket| GoServer
 
     %% Media Flow
-    ClientA <===>|3. Direct P2P Media Streams<br>(WebRTC Audio/Video)| ClientB
+    ClientA ---|3. Direct P2P Media Streams| ClientB
 ```
 
 ---

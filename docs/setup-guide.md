@@ -118,9 +118,9 @@ graph TD
     classDef private fill:#7F1D1D,stroke:#991B1B,stroke-width:2px,color:#fff;
 
     Vercel["Vercel Edge<br>(Next.js Web Frontend)"]:::edge -->|Web Client loads| Browser["User's Browser"]:::client
-    Browser <===>|Direct WebRTC P2P Media Stream| Peer["Remote Peer"]:::client
-    Browser <-->|REST / WS Signaling| Cloudflare["Cloudflare Edge<br>(faceme-api.butterflyinstruments.com)"]:::cloud
-    Cloudflare <-->|Secure Tunnel Connection (Outbound)| cloudflared["cloudflared<br>(Tunnel Client daemon)"]:::private
+    Browser ---|Direct WebRTC P2P Media Stream| Peer["Remote Peer"]:::client
+    Browser -->|REST / WS Signaling| Cloudflare["Cloudflare Edge<br>(faceme-api.butterflyinstruments.com)"]:::cloud
+    Cloudflare -->|Secure Tunnel Connection| cloudflared["cloudflared<br>(Tunnel Client daemon)"]:::private
     cloudflared -->|Forward local| GoBackend["Private Server<br>(Go Backend)"]:::private
 ```
 

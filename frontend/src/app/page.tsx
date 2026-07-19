@@ -15,8 +15,9 @@ export default function Home() {
   const handleCreateRoom = async () => {
     const newRoomId = Math.random().toString(36).substring(2, 8);
     
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || '';
     try {
-      await fetch(`/api/rooms`, {
+      await fetch(`${backendUrl}/api/rooms`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: newRoomId, topic: topic.trim() })

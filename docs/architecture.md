@@ -45,15 +45,15 @@ graph TD
     BrowserB -->|HTTP GET /| NextJS
 
     %% WebSockets and REST API
-    BrowserA <-->|Secure WS /ws/roomId| CFProxy
-    BrowserB <-->|Secure WS /ws/roomId| CFProxy
+    BrowserA -->|Secure WS /ws/roomId| CFProxy
+    BrowserB -->|Secure WS /ws/roomId| CFProxy
 
     %% Cloudflare Tunnel linkage
-    CFProxy <-->|Outbound Persistent Tunnel Connection| CFTunnel
-    CFTunnel <-->|Local Proxy Port 8080| GoBackend
+    CFProxy -->|Outbound Tunnel| CFTunnel
+    CFTunnel -->|Local Port 8080| GoBackend
 
     %% Peer-to-Peer media
-    BrowserA <===>|Direct WebRTC P2P Media Stream (Audio/Video)<br>STUN Server: stun:stun.l.google.com| BrowserB
+    BrowserA ---|Direct WebRTC P2P Media Stream| BrowserB
 ```
 
 ---
@@ -114,7 +114,7 @@ sequenceDiagram
         end
 
         Note over Creator, Guest: Peer Connection Established
-        Creator<==>Guest: Direct Peer-to-Peer Media Flow (WebRTC)
+        Creator->>Guest: Direct Peer-to-Peer Media Flow (WebRTC)
         Note over Creator, Guest: Media bytes bypass Go Server completely!
     end
 ```
@@ -123,28 +123,31 @@ sequenceDiagram
 
 ## 3. Go Backend State Management
 
-The backend is built in Go to guarantee low-latency, concurrent operations, and small memory foot-prints. 
+The backend is built in Go to guarantee low-latency, concurrent operations, and small memory foot-prints.
 
 ### In-Memory Thread Safety
+
 Because there is no persistent database, all state is ephemeral and resides in RAM. The system uses native Go concurrency primitives to remain thread-safe:
-- **`sync.Map` (`Rooms`):** Stores active rooms. This provides a lock-free read implementation for high-concurrency access to room pointers.
-- **`sync.Mutex` (`Room.mu`):** Each individual room manages a mutex lock `mu` to prevent data races on its `Clients` map during join, leave, and broadcasting operations.
+
+* **`sync.Map` (`Rooms`):** Stores active rooms. This provides a lock-free read implementation for high-concurrency access to room pointers.
+* **`sync.Mutex` (`Room.mu`):** Each individual room manages a mutex lock `mu` to prevent data races on its `Clients` map during join, leave, and broadcasting operations.
 
 ```go
 type Client struct {
-	Conn *websocket.Conn
-	Send chan []byte
+ Conn *websocket.Conn
+ Send chan []byte
 }
 
 type Room struct {
-	ID      string
-	Topic   string
-	Clients map[*Client]bool
-	mu      sync.Mutex
+ ID      string
+ Topic   string
+ Clients map[*Client]bool
+ mu      sync.Mutex
 }
 ```
 
 ### Lifecycle Rules & Guards
+
 1. **Strict 2-Person Limit:** The room joining method inspects the `Clients` map. If `len(r.Clients) >= 2`, the client is immediately rejected with a `{ "error": "Room is full" }` message, and the WebSocket is closed.
 2. **Zero-Waste Purge:** When a client leaves, they are removed from their room's `Clients` map. If `len(r.Clients) == 0`, the room ID is deleted from the global `Rooms` `sync.Map` immediately, ensuring zero leakage of stale memory allocations.
 
