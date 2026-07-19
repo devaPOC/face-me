@@ -2,7 +2,8 @@ import { Metadata } from 'next';
 import RoomUI from './RoomUI';
 
 type Props = {
-  params: any
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ creator?: string }>
 };
 
 // Fetch room topic for SEO metadata (Link Previews)
@@ -33,9 +34,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function RoomPage({ params }: Props) {
+export default async function RoomPage({ params, searchParams }: Props) {
   const p = await params;
+  const s = await searchParams;
   const id = p.id;
+  const isCreator = s?.creator === 'true';
   let topic = "";
 
   try {
@@ -50,6 +53,6 @@ export default async function RoomPage({ params }: Props) {
   }
 
   return (
-    <RoomUI roomId={id} initialTopic={topic} />
+    <RoomUI roomId={id} initialTopic={topic} isCreator={isCreator} />
   );
 }
