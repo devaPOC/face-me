@@ -39,6 +39,13 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
 
   const connect = async (userName: string) => {
     setLocalName(userName);
+    
+    // Safeguard for Secure Context (HTTPS or localhost)
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert("Camera access blocked! You must use HTTPS or localhost to access the camera (Secure Context). Please use a tunneling service like localtunnel.");
+      return;
+    }
+
     let stream: MediaStream | null = null;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
