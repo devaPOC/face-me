@@ -2,6 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Video, ArrowRight } from 'lucide-react';
 
 export default function Home() {
   const [roomId, setRoomId] = useState('');
@@ -9,10 +13,8 @@ export default function Home() {
   const router = useRouter();
 
   const handleCreateRoom = async () => {
-    // Generate a random 6-character string for the room ID
     const newRoomId = Math.random().toString(36).substring(2, 8);
     
-    // Attempt to register the room in the backend via Next.js proxy
     try {
       await fetch(`/api/rooms`, {
         method: 'POST',
@@ -34,45 +36,60 @@ export default function Home() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', fontFamily: 'sans-serif' }}>
-      <h1>P2P FaceTime Clone</h1>
-      
-      <div style={{ margin: '2rem 0', padding: '2rem', border: '1px solid #ccc', borderRadius: '8px', textAlign: 'center', width: '100%', maxWidth: '400px' }}>
-        <h2>Start a new call</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-          <input 
-            type="text" 
-            placeholder="Topic (Optional)" 
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            style={{ padding: '0.5rem', fontSize: '1.1rem' }}
-          />
-          <button 
-            onClick={handleCreateRoom}
-            style={{ padding: '0.5rem 1rem', fontSize: '1.1rem', cursor: 'pointer', background: '#0070f3', color: 'white', border: 'none', borderRadius: '4px' }}
-          >
-            Create Room
-          </button>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
+      {/* Logo / Title */}
+      <div className="flex items-center gap-3 mb-10">
+        <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary">
+          <Video className="w-6 h-6 text-primary-foreground" />
         </div>
+        <h1 className="text-3xl font-bold tracking-tight">FaceMe</h1>
       </div>
 
-      <div style={{ padding: '2rem', border: '1px solid #ccc', borderRadius: '8px', textAlign: 'center', width: '100%', maxWidth: '400px' }}>
-        <h2>Join an existing call</h2>
-        <form onSubmit={handleJoinRoom} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-          <input 
-            type="text" 
-            placeholder="Enter Room ID" 
-            value={roomId}
-            onChange={(e) => setRoomId(e.target.value)}
-            style={{ padding: '0.5rem', fontSize: '1.1rem' }}
-          />
-          <button 
-            type="submit"
-            style={{ padding: '0.5rem 1rem', fontSize: '1.1rem', cursor: 'pointer', background: '#333', color: 'white', border: 'none', borderRadius: '4px' }}
-          >
-            Join
-          </button>
-        </form>
+      <div className="flex flex-col gap-6 w-full max-w-sm">
+        {/* Create Room */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Start a new call</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <Input
+              type="text"
+              placeholder="Topic (optional)"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+            />
+            <Button onClick={handleCreateRoom} className="w-full cursor-pointer">
+              Create Room
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Divider */}
+        <div className="flex items-center gap-4">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs text-muted-foreground uppercase tracking-wider">or</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        {/* Join Room */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Join an existing call</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleJoinRoom} className="flex flex-col gap-3">
+              <Input
+                type="text"
+                placeholder="Enter Room ID"
+                value={roomId}
+                onChange={(e) => setRoomId(e.target.value)}
+              />
+              <Button type="submit" variant="secondary" className="w-full cursor-pointer">
+                Join <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
