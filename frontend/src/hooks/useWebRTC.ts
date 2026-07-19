@@ -84,7 +84,7 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
       try {
         const msg = JSON.parse(event.data) as SignalingMessage;
         const payload = msg.payload as any;
-        
+
         if (msg.type === 'knock' && isCreator) {
           setRemoteName(payload.name);
           setStatus('PROMPTING_CREATOR');
