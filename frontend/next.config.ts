@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // @ts-ignore
-  allowedDevOrigins: ['10.171.250.134', 'kqrnt-157-50-146-230.free.pinggy.net'],
+  allowedDevOrigins: ['10.171.250.134', 'bjhvw-2409-40f0-440a-7abb-b8f7-889e-64fc-4edb.run.pinggy-free.link'],
   async rewrites() {
     return [
       {

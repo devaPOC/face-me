@@ -6,6 +6,7 @@ import { useWebRTC } from '@/hooks/useWebRTC';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +15,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +35,8 @@ import {
 import {
   Mic, MicOff, Video, VideoOff,
   MoreVertical, PhoneOff, Hand, SwitchCamera,
-  ChevronUp, Loader2,
+  ChevronUp, Loader2, Users, Check, X, Clock,
+  Crown,
 } from 'lucide-react';
 
 export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: string, initialTopic: string, isCreator: boolean }) {
@@ -57,6 +66,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
   } = useWebRTC(roomId, isCreator);
   
   const [inputName, setInputName] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -83,6 +93,10 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
   const handleLeave = () => {
     router.push('/');
   };
+
+  // Derive participant counts for the badge
+  const inCallCount = (localName ? 1 : 0) + (status === 'IN_CALL' && remoteName ? 1 : 0);
+  const waitingCount = status === 'PROMPTING_CREATOR' && remoteName ? 1 : 0;
 
   /* ─── IDLE: Name Entry ─── */
   if (status === 'IDLE') {
@@ -208,6 +222,104 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
         </Dialog>
       </main>
 
+      {/* ─── People Sidebar (Sheet) ─── */}
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="right" className="w-[320px] sm:w-[360px] flex flex-col">
+          <SheetHeader>
+            <SheetTitle>People</SheetTitle>
+            <SheetDescription className="sr-only">Participants and waiting room</SheetDescription>
+          </SheetHeader>
+
+          <div className="flex-1 overflow-y-auto px-4 pb-4">
+            {/* In Call Section */}
+            <div className="mb-6">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                In call ({inCallCount})
+              </h3>
+              <div className="space-y-1">
+                {/* Self */}
+                {localName && (
+                  <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-semibold shrink-0">
+                      {localName.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{localName}</p>
+                      <p className="text-xs text-muted-foreground">You{isCreator ? ' · Host' : ''}</p>
+                    </div>
+                    {isCreator && <Crown className="w-4 h-4 text-amber-500 shrink-0" />}
+                  </div>
+                )}
+                
+                {/* Remote participant */}
+                {status === 'IN_CALL' && remoteName && (
+                  <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary text-secondary-foreground text-sm font-semibold shrink-0">
+                      {remoteName.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{remoteName}</p>
+                      <p className="text-xs text-muted-foreground">{!isCreator ? 'Host' : 'Guest'}</p>
+                    </div>
+                    {!isCreator && <Crown className="w-4 h-4 text-amber-500 shrink-0" />}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <Separator className="mb-6" />
+
+            {/* Waiting Room Section */}
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                Waiting room ({waitingCount})
+              </h3>
+              
+              {waitingCount === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <Clock className="w-8 h-8 text-muted-foreground/40 mb-2" />
+                  <p className="text-sm text-muted-foreground">No one is waiting</p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {status === 'PROMPTING_CREATOR' && remoteName && (
+                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-muted/30 border border-border">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-500/20 text-amber-500 text-sm font-semibold shrink-0">
+                        {remoteName.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{remoteName}</p>
+                        <p className="text-xs text-muted-foreground">Requesting to join</p>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button 
+                          variant="ghost" 
+                          size="icon-sm" 
+                          onClick={rejectGuest} 
+                          className="cursor-pointer text-destructive hover:text-destructive hover:bg-destructive/10"
+                          title="Deny"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon-sm" 
+                          onClick={() => { admitGuest(); setSidebarOpen(false); }} 
+                          className="cursor-pointer text-green-500 hover:text-green-500 hover:bg-green-500/10"
+                          title="Admit"
+                        >
+                          <Check className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+
       {/* ─── Controls Footer ─── */}
       <footer className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-card/90 backdrop-blur-xl px-3 py-2 rounded-full z-40 shadow-2xl border border-border">
 
@@ -292,6 +404,22 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
             {isVideoOff ? <VideoOff className="w-4 h-4" /> : <Video className="w-4 h-4" />}
           </Button>
         </div>
+
+        {/* People button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="rounded-full cursor-pointer relative"
+          title="People"
+        >
+          <Users className="w-4 h-4" />
+          {(waitingCount > 0) && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-black text-[10px] font-bold rounded-full flex items-center justify-center">
+              {waitingCount}
+            </span>
+          )}
+        </Button>
 
         {/* More options */}
         <DropdownMenu>
