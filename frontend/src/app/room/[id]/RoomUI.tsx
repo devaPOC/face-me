@@ -1,24 +1,39 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useWebRTC } from '@/hooks/useWebRTC';
 
 export default function RoomUI({ roomId, initialTopic }: { roomId: string, initialTopic: string }) {
   const router = useRouter();
-  
-  // State for controls
-  const [isMuted, setIsMuted] = useState(false);
-  const [isVideoOff, setIsVideoOff] = useState(false);
-  const [handRaised, setHandRaised] = useState(false);
+  const {
+    localStream,
+    remoteStream,
+    isMuted,
+    isVideoOff,
+    remoteHandRaised,
+    toggleMute,
+    toggleVideo,
+    raiseHand
+  } = useWebRTC(roomId);
   
   // Video Refs
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
-  // TODO: Implement WebRTC signaling and stream management here.
+  useEffect(() => {
+    if (localVideoRef.current && localStream) {
+      localVideoRef.current.srcObject = localStream;
+    }
+  }, [localStream]);
+
+  useEffect(() => {
+    if (remoteVideoRef.current && remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream]);
 
   const handleLeave = () => {
-    // TODO: cleanup WebRTC connections
     router.push('/');
   };
 
@@ -28,7 +43,7 @@ export default function RoomUI({ roomId, initialTopic }: { roomId: string, initi
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', fontFamily: 'sans-serif', background: '#111', color: 'white' }}>
       <header style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#222' }}>
         <h2>{title}</h2>
-        {handRaised && <span style={{ background: '#f5a623', padding: '0.5rem', borderRadius: '4px', color: 'black', fontWeight: 'bold' }}>Remote peer raised hand!</span>}
+        {remoteHandRaised && <span style={{ background: '#f5a623', padding: '0.5rem', borderRadius: '4px', color: 'black', fontWeight: 'bold' }}>Remote peer raised hand!</span>}
       </header>
 
       <main style={{ flex: 1, display: 'flex', padding: '1rem', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -56,19 +71,19 @@ export default function RoomUI({ roomId, initialTopic }: { roomId: string, initi
 
       <footer style={{ padding: '1rem', display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1rem', background: '#222' }}>
         <button 
-          onClick={() => setIsMuted(!isMuted)}
+          onClick={toggleMute}
           style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', cursor: 'pointer', borderRadius: '4px', border: 'none' }}
         >
           {isMuted ? 'Unmute' : 'Mute'}
         </button>
         <button 
-          onClick={() => setIsVideoOff(!isVideoOff)}
+          onClick={toggleVideo}
           style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', cursor: 'pointer', borderRadius: '4px', border: 'none' }}
         >
           {isVideoOff ? 'Turn Video On' : 'Turn Video Off'}
         </button>
         <button 
-          onClick={() => setHandRaised(!handRaised)} // Mocking the toggle for now
+          onClick={raiseHand}
           style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', cursor: 'pointer', borderRadius: '4px', border: 'none' }}
         >
           Raise Hand
