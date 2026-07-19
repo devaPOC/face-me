@@ -26,6 +26,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuGroup,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -338,18 +339,20 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
               <ChevronUp className="w-3.5 h-3.5" />
             </DropdownMenuTrigger>
             <DropdownMenuContent side="top" align="start" className="min-w-[220px]">
-              <DropdownMenuLabel>Microphone</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup value={selectedAudioId} onValueChange={(v) => switchDevice('audio', v)}>
-                {audioDevices.length === 0 && (
-                  <DropdownMenuItem disabled>No microphones found</DropdownMenuItem>
-                )}
-                {audioDevices.map((d, i) => (
-                  <DropdownMenuRadioItem key={d.deviceId || i} value={d.deviceId}>
-                    {d.label || `Microphone ${i + 1}`}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Microphone</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup value={selectedAudioId} onValueChange={(v) => switchDevice('audio', v)}>
+                  {audioDevices.length === 0 && (
+                    <DropdownMenuItem disabled>No microphones found</DropdownMenuItem>
+                  )}
+                  {audioDevices.map((d, i) => (
+                    <DropdownMenuRadioItem key={d.deviceId || i} value={d.deviceId}>
+                      {d.label || `Microphone ${i + 1}`}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -379,18 +382,20 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
               <ChevronUp className="w-3.5 h-3.5" />
             </DropdownMenuTrigger>
             <DropdownMenuContent side="top" align="start" className="min-w-[220px]">
-              <DropdownMenuLabel>Camera</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup value={selectedVideoId} onValueChange={(v) => switchDevice('video', v)}>
-                {videoDevices.length === 0 && (
-                  <DropdownMenuItem disabled>No cameras found</DropdownMenuItem>
-                )}
-                {videoDevices.map((d, i) => (
-                  <DropdownMenuRadioItem key={d.deviceId || i} value={d.deviceId}>
-                    {d.label || `Camera ${i + 1}`}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Camera</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup value={selectedVideoId} onValueChange={(v) => switchDevice('video', v)}>
+                  {videoDevices.length === 0 && (
+                    <DropdownMenuItem disabled>No cameras found</DropdownMenuItem>
+                  )}
+                  {videoDevices.map((d, i) => (
+                    <DropdownMenuRadioItem key={d.deviceId || i} value={d.deviceId}>
+                      {d.label || `Camera ${i + 1}`}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
 
