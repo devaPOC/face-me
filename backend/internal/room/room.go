@@ -15,6 +15,7 @@ type Client struct {
 
 type Room struct {
 	ID      string
+	Topic   string
 	Clients map[*Client]bool
 	mu      sync.Mutex
 }
@@ -24,15 +25,25 @@ var (
 )
 
 // GetOrCreateRoom returns an existing room or creates a new one
-func GetOrCreateRoom(id string) *Room {
+func GetOrCreateRoom(id string, topic string) *Room {
 	r, loaded := Rooms.LoadOrStore(id, &Room{
 		ID:      id,
+		Topic:   topic,
 		Clients: make(map[*Client]bool),
 	})
 	if !loaded {
-		log.Printf("Room %s created", id)
+		log.Printf("Room %s created with topic: %s", id, topic)
 	}
 	return r.(*Room)
+}
+
+// GetRoom returns an existing room, if it exists
+func GetRoom(id string) (*Room, bool) {
+	r, ok := Rooms.Load(id)
+	if !ok {
+		return nil, false
+	}
+	return r.(*Room), true
 }
 
 // Join adds a client to the room, enforcing the 2-person limit
