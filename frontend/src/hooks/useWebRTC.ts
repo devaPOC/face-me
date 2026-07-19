@@ -21,21 +21,20 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
-  const cleanup = useCallback(() => {
-    localStream?.getTracks().forEach(track => track.stop());
-    pcRef.current?.close();
-    wsRef.current?.close();
-  }, [localStream]);
-
+  // Cleanup WebRTC connections on unmount
   useEffect(() => {
     return () => {
-      // Intentionally avoiding passing cleanup directly to useEffect return to prevent premature teardown on re-renders,
-      // but standard unmount cleanup is needed.
-      localStream?.getTracks().forEach(track => track.stop());
       pcRef.current?.close();
       wsRef.current?.close();
     };
   }, []);
+
+  // Cleanup local media stream on unmount or when it changes
+  useEffect(() => {
+    return () => {
+      localStream?.getTracks().forEach(track => track.stop());
+    };
+  }, [localStream]);
 
   const connect = async (userName: string) => {
     setLocalName(userName);
@@ -102,7 +101,7 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
           ws.send(JSON.stringify({ type: 'ready' }));
         } else if (msg.type === 'reject' && !isCreator) {
           setStatus('REJECTED');
-          localStream?.getTracks().forEach(track => track.stop());
+          stream?.getTracks().forEach(track => track.stop());
           pc.close();
           ws.close();
         } else if (msg.type === 'ready' && isCreator) {
