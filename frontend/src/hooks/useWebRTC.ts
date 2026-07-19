@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
-export type CallStatus = 'IDLE' | 'WAITING_FOR_GUEST' | 'KNOCKING' | 'PROMPTING_CREATOR' | 'IN_CALL' | 'REJECTED';
+export type CallStatus = 'IDLE' | 'WAITING_FOR_GUEST' | 'KNOCKING' | 'PROMPTING_CREATOR' | 'IN_CALL' | 'REJECTED' | 'FULL';
 
 type SignalingMessage = {
   type: 'knock' | 'admit' | 'reject' | 'ready' | 'offer' | 'answer' | 'ice_candidate' | 'action';
@@ -116,7 +116,20 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
 
     ws.onmessage = async (event) => {
       try {
-        const msg = JSON.parse(event.data) as SignalingMessage;
+        const data = JSON.parse(event.data);
+        if (data && data.error) {
+          if (data.error === 'Room is full') {
+            setStatus('FULL');
+          } else {
+            setStatus('REJECTED');
+          }
+          stream?.getTracks().forEach(track => track.stop());
+          pc.close();
+          ws.close();
+          return;
+        }
+
+        const msg = data as SignalingMessage;
         const payload = msg.payload as any;
 
         if (msg.type === 'knock' && isCreator) {
