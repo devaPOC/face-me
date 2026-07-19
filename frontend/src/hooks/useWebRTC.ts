@@ -48,11 +48,8 @@ export function useWebRTC(roomId: string) {
       };
 
       // Connect signaling server
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const host = window.location.hostname === 'localhost' ? 'localhost:8080' : window.location.host;
-      const wsUrl = process.env.NODE_ENV === 'development' 
-        ? `ws://localhost:8080/ws/${roomId}` 
-        : `${protocol}//${host}/ws/${roomId}`;
+      const wsBase = process.env.NEXT_PUBLIC_WS_URL || (window.location.protocol === 'https:' ? `wss://${window.location.host}` : `ws://${window.location.host}`);
+      const wsUrl = `${wsBase}/ws/${roomId}`;
       
       ws = new WebSocket(wsUrl);
       wsRef.current = ws;

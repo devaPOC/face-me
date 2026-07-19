@@ -12,7 +12,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   let title = "Meet: Private Room";
 
   try {
-    const res = await fetch(`http://localhost:8080/api/rooms/${id}`, { cache: 'no-store' });
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
+    const res = await fetch(`${backendUrl}/api/rooms/${id}`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       if (data.topic) {
@@ -38,7 +39,8 @@ export default async function RoomPage({ params }: Props) {
   let topic = "";
 
   try {
-    const res = await fetch(`http://localhost:8080/api/rooms/${id}`, { cache: 'no-store' });
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
+    const res = await fetch(`${backendUrl}/api/rooms/${id}`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       topic = data.topic || "";

@@ -14,7 +14,8 @@ export default function Home() {
     
     // Attempt to register the room in the backend
     try {
-      await fetch('http://localhost:8080/api/rooms', {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
+      await fetch(`${backendUrl}/api/rooms`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: newRoomId, topic: topic.trim() })
