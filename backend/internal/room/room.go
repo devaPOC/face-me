@@ -69,6 +69,14 @@ func (r *Room) Leave(c *Client) {
 		delete(r.Clients, c)
 		close(c.Send)
 		log.Printf("Client left room %s. Total occupants: %d", r.ID, len(r.Clients))
+
+		// Broadcast a leave event to all remaining clients in the room
+		for client := range r.Clients {
+			select {
+			case client.Send <- []byte(`{"type":"leave"}`):
+			default:
+			}
+		}
 	}
 
 	if len(r.Clients) == 0 {

@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
-export type CallStatus = 'IDLE' | 'WAITING_FOR_GUEST' | 'KNOCKING' | 'PROMPTING_CREATOR' | 'IN_CALL' | 'REJECTED' | 'FULL';
+export type CallStatus = 'IDLE' | 'WAITING_FOR_GUEST' | 'KNOCKING' | 'PROMPTING_CREATOR' | 'IN_CALL' | 'REJECTED' | 'FULL' | 'ENDED';
 
 type SignalingMessage = {
-  type: 'knock' | 'admit' | 'reject' | 'ready' | 'offer' | 'answer' | 'ice_candidate' | 'action';
+  type: 'knock' | 'admit' | 'reject' | 'ready' | 'offer' | 'answer' | 'ice_candidate' | 'action' | 'leave';
   payload?: unknown;
 };
 
@@ -161,6 +161,39 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
           if (payload?.action === 'raise_hand') {
             setRemoteHandRaised(true);
             setTimeout(() => setRemoteHandRaised(false), 3000);
+          }
+        } else if (msg.type === 'leave') {
+          if (pcRef.current) {
+            pcRef.current.close();
+          }
+          setRemoteStream(null);
+          setRemoteName('');
+
+          if (isCreator) {
+            // Re-initialize peer connection for a new guest
+            const newPC = new RTCPeerConnection({
+              iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+            });
+            pcRef.current = newPC;
+
+            if (stream) {
+              stream.getTracks().forEach((track) => newPC.addTrack(track, stream!));
+            }
+
+            newPC.ontrack = (event) => {
+              setRemoteStream(event.streams[0]);
+            };
+
+            newPC.onicecandidate = (event) => {
+              if (event.candidate && wsRef.current?.readyState === WebSocket.OPEN) {
+                wsRef.current.send(JSON.stringify({ type: 'ice_candidate', payload: event.candidate }));
+              }
+            };
+
+            setStatus('WAITING_FOR_GUEST');
+          } else {
+            setStatus('ENDED');
+            wsRef.current?.close();
           }
         }
       } catch (err) {
