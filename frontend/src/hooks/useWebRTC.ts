@@ -65,9 +65,10 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
       }
     };
 
-    const wsBase = process.env.NEXT_PUBLIC_WS_URL || (window.location.protocol === 'https:' ? `wss://${window.location.host}` : `ws://${window.location.host}`);
-    const wsUrl = `${wsBase}/ws/${roomId}`;
-
+    // Connect signaling server via Next.js proxy
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws/${roomId}`;
+    
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 

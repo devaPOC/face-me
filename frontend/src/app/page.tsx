@@ -12,10 +12,9 @@ export default function Home() {
     // Generate a random 6-character string for the room ID
     const newRoomId = Math.random().toString(36).substring(2, 8);
     
-    // Attempt to register the room in the backend
+    // Attempt to register the room in the backend via Next.js proxy
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
-      await fetch(`${backendUrl}/api/rooms`, {
+      await fetch(`/api/rooms`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: newRoomId, topic: topic.trim() })
