@@ -8,14 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -83,6 +75,13 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
       remoteVideoRef.current.srcObject = remoteStream;
     }
   }, [remoteStream, status]);
+
+  // Auto-open the sidebar when someone knocks
+  useEffect(() => {
+    if (status === 'PROMPTING_CREATOR') {
+      setSidebarOpen(true);
+    }
+  }, [status]);
 
   const handleJoin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -205,22 +204,6 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
             </div>
           </div>
         )}
-        
-        {/* Admission Dialog */}
-        <Dialog open={status === 'PROMPTING_CREATOR'} onOpenChange={() => {}}>
-          <DialogContent showCloseButton={false} className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>{remoteName} wants to join</DialogTitle>
-              <DialogDescription>
-                Allow this person into the call?
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="flex gap-2 sm:justify-end">
-              <Button variant="secondary" onClick={rejectGuest} className="cursor-pointer">Deny</Button>
-              <Button onClick={admitGuest} className="cursor-pointer">Admit</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </main>
 
       {/* ─── People Sidebar (Sheet) ─── */}
