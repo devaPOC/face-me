@@ -43,21 +43,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `${title} | FaceMe`,
       description,
       siteName: "FaceMe",
-      images: [
-        {
-          url: "/og-image.png",
-          width: 1200,
-          height: 630,
-          alt: "FaceMe — Join Private Video Call Preview Card",
-          type: "image/png",
-        },
-      ],
     },
     twitter: {
       card: "summary_large_image",
       title: `${title} | FaceMe`,
       description,
-      images: ["/og-image.png"],
     },
   };
 }

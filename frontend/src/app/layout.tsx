@@ -53,32 +53,20 @@ export const metadata: Metadata = {
     title: "FaceMe — Peer-to-Peer Video Calling | Instant 1-on-1 Calls",
     description:
       "Ultra-low latency, zero-persistence 1-to-1 peer-to-peer video calling powered by WebRTC and Go. Instant private calls with no registration.",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "FaceMe — Peer-to-Peer Video Calling Preview Card",
-        type: "image/png",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "FaceMe — Peer-to-Peer Video Calling",
     description:
       "Instant, zero-persistence 1-to-1 peer-to-peer WebRTC video calls. No signups, no downloads, end-to-end media privacy.",
-    images: ["/og-image.png"],
     creator: "@faceme",
   },
   icons: {
     icon: [
-      { url: "/icon.png", type: "image/png" },
-      { url: "/favicon.ico" },
+      { url: "/icon.svg", type: "image/svg+xml" },
     ],
-    apple: [
-      { url: "/apple-icon.png", type: "image/png" },
-    ],
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
   },
 };
 

@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,23 +38,32 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
-      {/* Logo / Title */}
+      {/* Minimal Black & White Vector Logo / Title */}
       <div className="flex flex-col items-center gap-3 mb-8 text-center">
-        <div className="relative w-16 h-16 rounded-2xl overflow-hidden shadow-2xl border border-cyan-500/20 shadow-cyan-500/10">
-          <Image
-            src="/icon.png"
-            alt="FaceMe Logo Icon"
-            fill
-            className="object-cover"
-            priority
-          />
+        <div className="w-14 h-14 rounded-2xl bg-foreground text-background flex items-center justify-center shadow-xl border border-border">
+          <svg className="w-7 h-7" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M16 21C16 18.7909 17.7909 17 20 17H34C36.2091 17 38 18.7909 38 21V43C38 45.2091 36.2091 47 34 47H20C17.7909 47 16 45.2091 16 43V21Z"
+              stroke="currentColor"
+              strokeWidth="3.5"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M38 27.5L48 21V43L38 36.5"
+              stroke="currentColor"
+              strokeWidth="3.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <circle cx="27" cy="32" r="4" fill="currentColor" />
+          </svg>
         </div>
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
             FaceMe
           </h1>
-          <p className="text-xs text-muted-foreground mt-1">
-            Instant, Zero-Persistence P2P Video Calls
+          <p className="text-xs text-muted-foreground mt-1 tracking-wide">
+            Instant · Zero-Persistence · P2P Video Calls
           </p>
         </div>
       </div>
