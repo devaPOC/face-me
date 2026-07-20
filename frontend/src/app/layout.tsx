@@ -8,8 +8,95 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "FaceMe — P2P Video Calls",
-  description: "A peer-to-peer video calling app built with WebRTC",
+  metadataBase: new URL("https://faceme.switchspace.in"),
+  title: {
+    default: "FaceMe — Peer-to-Peer Video Calling | Instant 1-on-1 Calls",
+    template: "%s | FaceMe",
+  },
+  description:
+    "Ultra-low latency, zero-persistence 1-to-1 peer-to-peer video calling application powered by WebRTC, Next.js 16, and Go. No accounts, no trackings, completely private browser-to-browser media streaming.",
+  keywords: [
+    "FaceMe",
+    "WebRTC",
+    "P2P Video Call",
+    "Peer-to-Peer Video Chat",
+    "FaceTime Clone",
+    "Private Video Calling",
+    "Zero Persistence Chat",
+    "Browser Video Call",
+    "Open Source FaceTime",
+    "Go WebRTC Signaling",
+  ],
+  authors: [{ name: "FaceMe", url: "https://faceme.switchspace.in" }],
+  creator: "FaceMe",
+  publisher: "FaceMe",
+  applicationName: "FaceMe",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: "https://faceme.switchspace.in",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://faceme.switchspace.in",
+    siteName: "FaceMe",
+    title: "FaceMe — Peer-to-Peer Video Calling | Instant 1-on-1 Calls",
+    description:
+      "Ultra-low latency, zero-persistence 1-to-1 peer-to-peer video calling powered by WebRTC and Go. Instant private calls with no registration.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "FaceMe — Peer-to-Peer Video Calling Preview Card",
+        type: "image/png",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FaceMe — Peer-to-Peer Video Calling",
+    description:
+      "Instant, zero-persistence 1-to-1 peer-to-peer WebRTC video calls. No signups, no downloads, end-to-end media privacy.",
+    images: ["/og-image.png"],
+    creator: "@faceme",
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "FaceMe",
+  url: "https://faceme.switchspace.in",
+  description:
+    "Ultra-low latency, zero-persistence 1-to-1 peer-to-peer video calling application built with WebRTC, Next.js, and Go.",
+  applicationCategory: "CommunicationApplication",
+  operatingSystem: "All",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+  },
+  featureList: [
+    "Peer-to-peer video calling via WebRTC",
+    "Zero persistence in-memory signaling server",
+    "Knocking & waiting room access controls",
+    "Microphone & camera selector",
+    "Hand raise notifications",
+  ],
 };
 
 export default function RootLayout({
@@ -19,7 +106,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`dark ${inter.variable}`}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="antialiased">{children}</body>
     </html>
   );
 }
+
