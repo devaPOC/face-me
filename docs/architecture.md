@@ -10,7 +10,7 @@ The application is deployed using a hybrid serverless/on-premises architecture d
 
 * **Frontend:** Built with Next.js and hosted on the Vercel Edge Network for rapid static asset delivery and serverless route optimization.
 * **Backend:** A lightweight Go application running on a private server inside a local network with **no public IP address**.
-* **Tunneling & Security:** A Cloudflare Tunnel client daemon (`cloudflared`) runs next to the Go backend on the private server. It initiates a persistent outbound control link to the Cloudflare Edge network. All user requests to `faceme-api.butterflyinstruments.com` are securely proxied through Cloudflare down to the local server, completely eliminating the need to expose ports on a home router.
+* **Tunneling & Security:** A Cloudflare Tunnel client daemon (`cloudflared`) runs next to the Go backend on the private server. It initiates a persistent outbound control link to the Cloudflare Edge network. All user requests to `faceme-api.switchspace.in` are securely proxied through Cloudflare down to the local server, completely eliminating the need to expose ports on a home router.
 
 ### Deployment Architecture Diagram
 
@@ -28,11 +28,11 @@ graph TD
     end
 
     subgraph VercelEdge ["Vercel Edge Network"]
-        NextJS["Next.js Web Frontend<br>(faceme.butterflyinstruments.com)"]:::edge
+        NextJS["Next.js Web Frontend<br>(faceme.switchspace.in)"]:::edge
     end
 
     subgraph CloudflareNetwork ["Cloudflare Edge Network"]
-        CFProxy["Cloudflare Edge Proxy<br>(faceme-api.butterflyinstruments.com)"]:::cloud
+        CFProxy["Cloudflare Edge Proxy<br>(faceme-api.switchspace.in)"]:::cloud
     end
 
     subgraph PrivateHomeNetwork ["On-Premises Private Network (No Public IP)"]

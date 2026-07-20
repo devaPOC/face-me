@@ -107,8 +107,8 @@ ssh -R 80:localhost:3000 public@ssh.pinggy.io
 
 The production release is designed to be highly secure and cost-efficient:
 
-- **Frontend:** Deployed to **Vercel** (`faceme.butterflyinstruments.com`).
-- **Backend:** Deployed on a **Private Home Server** with no public IP address, exposed securely to the internet via a **Cloudflare Tunnel** (`faceme-api.butterflyinstruments.com`).
+- **Frontend:** Deployed to **Vercel** (`faceme.switchspace.in`).
+- **Backend:** Deployed on a **Private Home Server** with no public IP address, exposed securely to the internet via a **Cloudflare Tunnel** (`faceme-api.switchspace.in`).
 
 ```mermaid
 graph TD
@@ -119,14 +119,14 @@ graph TD
 
     Vercel["Vercel Edge<br>(Next.js Web Frontend)"]:::edge -->|Web Client loads| Browser["User's Browser"]:::client
     Browser ---|Direct WebRTC P2P Media Stream| Peer["Remote Peer"]:::client
-    Browser -->|REST / WS Signaling| Cloudflare["Cloudflare Edge<br>(faceme-api.butterflyinstruments.com)"]:::cloud
+    Browser -->|REST / WS Signaling| Cloudflare["Cloudflare Edge<br>(faceme-api.switchspace.in)"]:::cloud
     Cloudflare -->|Secure Tunnel Connection| cloudflared["cloudflared<br>(Tunnel Client daemon)"]:::private
     cloudflared -->|Forward local| GoBackend["Private Server<br>(Go Backend)"]:::private
 ```
 
 ### 4.1 Deploying the Backend via Cloudflare Tunnel
 
-Since the private server has no public IP, it cannot accept incoming direct connections. Instead, the `cloudflared` daemon runs on the server and maintains an active *outbound* connection to Cloudflare's nearest edge servers. Cloudflare routes incoming requests to `faceme-api.butterflyinstruments.com` through this tunnel.
+Since the private server has no public IP, it cannot accept incoming direct connections. Instead, the `cloudflared` daemon runs on the server and maintains an active *outbound* connection to Cloudflare's nearest edge servers. Cloudflare routes incoming requests to `faceme-api.switchspace.in` through this tunnel.
 
 #### Step 1: Install cloudflared on your private server
 
@@ -140,7 +140,7 @@ On the private server, run:
 cloudflared tunnel login
 ```
 
-Follow the URL to authorize your Cloudflare account and select the domain `butterflyinstruments.com`.
+Follow the URL to authorize your Cloudflare account and select the domain `switchspace.in`.
 
 #### Step 3: Create a Tunnel
 
@@ -152,10 +152,10 @@ This generates a tunnel credentials JSON file (e.g., `~/.cloudflared/xxxxxx.json
 
 #### Step 4: Route your Subdomain to the Tunnel
 
-Associate the subdomain `faceme-api.butterflyinstruments.com` with your tunnel:
+Associate the subdomain `faceme-api.switchspace.in` with your tunnel:
 
 ```bash
-cloudflared tunnel route dns faceme-tunnel faceme-api.butterflyinstruments.com
+cloudflared tunnel route dns faceme-tunnel faceme-api.switchspace.in
 ```
 
 #### Step 5: Configure the Tunnel
@@ -167,7 +167,7 @@ tunnel: faceme-tunnel
 credentials-file: /home/user/.cloudflared/xxxxxx.json
 
 ingress:
-  - hostname: faceme-api.butterflyinstruments.com
+  - hostname: faceme-api.switchspace.in
     service: http://localhost:8080
   - service: http_status:404
 ```
@@ -188,7 +188,7 @@ ingress:
 ### 4.2 Deploying the Frontend (Vercel)
 
 1. Create a new project on **Vercel** and connect it to your Git repository.
-2. In the Next.js frontend code, configure the environment variables so that production API calls target `faceme-api.butterflyinstruments.com` instead of localhost:
-   - **`NEXT_PUBLIC_API_URL`**: `https://faceme-api.butterflyinstruments.com`
-   - **`NEXT_PUBLIC_WS_URL`**: `wss://faceme-api.butterflyinstruments.com`
-3. Configure your custom domain `faceme.butterflyinstruments.com` in Vercel settings and add the CNAME records to your DNS provider (Cloudflare).
+2. In the Next.js frontend code, configure the environment variables so that production API calls target `faceme-api.switchspace.in` instead of localhost:
+   - **`NEXT_PUBLIC_API_URL`**: `https://faceme-api.switchspace.in`
+   - **`NEXT_PUBLIC_WS_URL`**: `wss://faceme-api.switchspace.in`
+3. Configure your custom domain `faceme.switchspace.in` in Vercel settings and add the CNAME records to your DNS provider (Cloudflare).

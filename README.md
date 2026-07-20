@@ -8,8 +8,8 @@ It is designed to showcase modern web technologies, including **WebRTC** for dir
 
 ## 🚀 Live Deployments
 
-* **Frontend App:** [faceme.butterflyinstruments.com](https://faceme.butterflyinstruments.com)
-* **Backend Signaling API:** `faceme-api.butterflyinstruments.com` (Secured behind a Cloudflare Tunnel with no public ports exposed on the host machine)
+* **Frontend App:** [faceme.switchspace.in](https://faceme.switchspace.in)
+* **Backend Signaling API:** `faceme-api.switchspace.in` (Secured behind a Cloudflare Tunnel with no public ports exposed on the host machine)
 
 ---
 
