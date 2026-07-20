@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Video, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export default function Home() {
   const [roomId, setRoomId] = useState('');
@@ -39,11 +40,24 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
       {/* Logo / Title */}
-      <div className="flex items-center gap-3 mb-10">
-        <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary">
-          <Video className="w-6 h-6 text-primary-foreground" />
+      <div className="flex flex-col items-center gap-3 mb-8 text-center">
+        <div className="relative w-16 h-16 rounded-2xl overflow-hidden shadow-2xl border border-cyan-500/20 shadow-cyan-500/10">
+          <Image
+            src="/icon.png"
+            alt="FaceMe Logo Icon"
+            fill
+            className="object-cover"
+            priority
+          />
         </div>
-        <h1 className="text-3xl font-bold tracking-tight">FaceMe</h1>
+        <div>
+          <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400 bg-clip-text text-transparent">
+            FaceMe
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            Instant, Zero-Persistence P2P Video Calls
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-col gap-6 w-full max-w-sm">

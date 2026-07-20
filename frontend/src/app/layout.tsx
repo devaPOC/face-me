@@ -72,7 +72,13 @@ export const metadata: Metadata = {
     creator: "@faceme",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+      { url: "/favicon.ico" },
+    ],
+    apple: [
+      { url: "/apple-icon.png", type: "image/png" },
+    ],
   },
 };
 
