@@ -7,8 +7,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/devaPOC/face-me/backend/internal/metrics"
+	"github.com/devaPOC/face-me/backend/internal/room"
 	"github.com/gorilla/websocket"
-	"github.com/username/face-time-clone/backend/internal/room"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var upgrader = websocket.Upgrader{
@@ -66,14 +68,14 @@ func handleRoomsAPI(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, `{"error": "Invalid JSON"}`, http.StatusBadRequest)
 			return
 		}
-		
+
 		if body.ID == "" {
 			http.Error(w, `{"error": "Room ID is required"}`, http.StatusBadRequest)
 			return
 		}
 
 		rm := room.GetOrCreateRoom(body.ID, body.Topic)
-		
+
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"id":    rm.ID,
 			"topic": rm.Topic,
@@ -137,6 +139,14 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 			}
 			break
 		}
+
+		var payload struct {
+			Type string `json:"type"`
+		}
+		if err := json.Unmarshal(msg, &payload); err == nil && payload.Type != "" {
+			metrics.WebsocketMessagesTotal.WithLabelValues(payload.Type).Inc()
+		}
+
 		// Route message to the other peer
 		rm.Broadcast(client, msg)
 	}
@@ -146,6 +156,7 @@ func main() {
 	http.HandleFunc("/api/rooms/", handleRoomsAPI) // handles /api/rooms and /api/rooms/{id}
 	http.HandleFunc("/api/rooms", handleRoomsAPI)
 	http.HandleFunc("/ws/", handleConnections)
+	http.Handle("/metrics", promhttp.Handler())
 
 	port := os.Getenv("PORT")
 	if port == "" {

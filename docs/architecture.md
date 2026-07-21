@@ -236,3 +236,43 @@ sequenceDiagram
     Worker->>Receiver: Raw Audio/Video Frames
     Receiver->>PC: Render to HTMLVideoElement
 ```
+
+---
+
+## 6. Level 3: Observability & Telemetry
+
+### Client-Side Metric Parsing (Stats for Nerds)
+
+The React client actively polls `RTCPeerConnection.getStats()` every second when in a call.
+We iterate through the generated `RTCStatsReport` map to extract keys matching specific transport layers:
+
+* **`inbound-rtp` (Video):**
+  * `jitter` → Converted to ms.
+  * `packetsLost` → Raw counter.
+  * `frameWidth` x `frameHeight` → Resolution.
+  * `framesPerSecond` → FPS.
+* **`remote-inbound-rtp` (Video):**
+  * `roundTripTime` → Converted to ms.
+* **`candidate-pair` (State: Succeeded):**
+  * Cross-referenced `localCandidateId` and `remoteCandidateId` to determine the active ICE protocol (UDP/TCP) and candidate type (e.g. `host`, `srflx`, `relay`).
+* **Bitrate Calculation:**
+  * Derived by tracking the delta of `(bytesReceived + bytesSent)` between successive 1-second interval polls, converted to kilobits per second (kbps).
+
+### Go Backend Prometheus Instrumentation
+
+The Go signaling server exposes a lightweight Prometheus metrics endpoint at `GET /metrics`.
+
+**Exposed Application Metrics:**
+* `faceme_active_rooms` (Gauge): Total active rooms held in the signaling `sync.Map`.
+* `faceme_active_clients` (Gauge): Total connected WebSocket peers across all active rooms.
+* `faceme_websocket_messages_total` (CounterVec): Total signaling messages routed through the server, labeled by the JSON `type` field (e.g., `offer`, `answer`, `ice_candidate`, `knock`).
+* `faceme_room_rejections_total` (Counter): Number of times a 3rd user attempted to join a room that was already full.
+
+**Sample Prometheus Scrape Configuration (`prometheus.yml`):**
+```yaml
+scrape_configs:
+  - job_name: 'faceme_backend'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['localhost:8080']
+```

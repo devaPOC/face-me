@@ -16,6 +16,17 @@ export type ChatMessage = {
   fileUrl?: string;
 };
 
+export type Telemetry = {
+  rtt: number;
+  jitter: number;
+  packetLoss: number;
+  resolution: string;
+  fps: number;
+  bitrateKbps: number;
+  iceType: string;
+  iceProtocol: string;
+};
+
 export function useWebRTC(roomId: string, isCreator: boolean) {
   const [status, setStatus] = useState<CallStatus>('IDLE');
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -23,9 +34,10 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [remoteHandRaised, setRemoteHandRaised] = useState(false);
-  
+
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [telemetry, setTelemetry] = useState<Telemetry | null>(null);
 
   const [localName, setLocalName] = useState('');
   const [remoteName, setRemoteName] = useState('');
@@ -43,6 +55,8 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
   const e2eeWorkerRef = useRef<Worker | null>(null);
   const incomingFile = useRef<{ name: string; size: number; type: string; chunks: ArrayBuffer[]; receivedSize: number } | null>(null);
 
+  const lastStatsRef = useRef<{ timestamp: number; bytesReceived: number; bytesSent: number } | null>(null);
+
   // Initialize E2EE Worker and cleanup WebRTC connections on unmount
   useEffect(() => {
     e2eeWorkerRef.current = new Worker('/e2ee.worker.js');
@@ -59,6 +73,65 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
       localStream?.getTracks().forEach(track => track.stop());
     };
   }, [localStream]);
+
+  // Telemetry Polling Loop
+  useEffect(() => {
+    if (status !== 'IN_CALL') {
+      setTelemetry(null);
+      return;
+    }
+
+    const interval = setInterval(async () => {
+      if (!pcRef.current) return;
+      const stats = await pcRef.current.getStats();
+      let rtt = 0, jitter = 0, packetLoss = 0;
+      let resolution = '0x0', fps = 0, bitrateKbps = 0;
+      let iceType = '', iceProtocol = '';
+      let bytesReceived = 0, bytesSent = 0;
+
+      stats.forEach(report => {
+        if (report.type === 'inbound-rtp' && report.kind === 'video') {
+          jitter = (report.jitter || 0) * 1000;
+          packetLoss = report.packetsLost || 0;
+          resolution = `${report.frameWidth || 0}x${report.frameHeight || 0}`;
+          fps = report.framesPerSecond || 0;
+          bytesReceived = report.bytesReceived || 0;
+        } else if (report.type === 'outbound-rtp' && report.kind === 'video') {
+          bytesSent = report.bytesSent || 0;
+        } else if (report.type === 'remote-inbound-rtp' && report.kind === 'video') {
+          rtt = (report.roundTripTime || 0) * 1000;
+        } else if (report.type === 'candidate-pair' && report.state === 'succeeded') {
+          const local = stats.get(report.localCandidateId);
+          const remote = stats.get(report.remoteCandidateId);
+          iceType = `${local?.candidateType || 'unknown'} -> ${remote?.candidateType || 'unknown'}`;
+          iceProtocol = local?.protocol || 'unknown';
+        }
+      });
+
+      const now = performance.now();
+      if (lastStatsRef.current) {
+        const timeDelta = (now - lastStatsRef.current.timestamp) / 1000;
+        const bytesDelta = (bytesReceived + bytesSent) - (lastStatsRef.current.bytesReceived + lastStatsRef.current.bytesSent);
+        if (timeDelta > 0 && bytesDelta > 0) {
+          bitrateKbps = Math.round((bytesDelta * 8) / timeDelta / 1000);
+        }
+      }
+      lastStatsRef.current = { timestamp: now, bytesReceived, bytesSent };
+
+      setTelemetry({
+        rtt: Math.round(rtt),
+        jitter: Math.round(jitter),
+        packetLoss,
+        resolution,
+        fps: Math.round(fps),
+        bitrateKbps,
+        iceType,
+        iceProtocol: iceProtocol.toUpperCase()
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [status]);
 
   const loadDevices = async () => {
     try {
@@ -89,7 +162,6 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
           }
         }
       } else {
-        // Binary data chunk
         if (incomingFile.current) {
           incomingFile.current.chunks.push(event.data);
           incomingFile.current.receivedSize += event.data.byteLength;
@@ -101,7 +173,7 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
 
   const connect = async (userName: string) => {
     setLocalName(userName);
-    
+
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       alert("Camera access blocked! You must use HTTPS or localhost to access the camera (Secure Context). Please use a tunneling service like localtunnel.");
       return;
@@ -159,7 +231,7 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL
       ? `${process.env.NEXT_PUBLIC_WS_URL}/ws/${roomId}`
       : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws/${roomId}`;
-    
+
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
@@ -225,7 +297,7 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
           if (isCreator) {
             const newPC = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
             pcRef.current = newPC;
-            
+
             const dc = newPC.createDataChannel("faceme-datachannel", { ordered: true });
             setupDataChannel(dc);
 
@@ -267,15 +339,15 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     if (!localStream || !pcRef.current) return;
 
     try {
-      const constraints = kind === 'audio' 
+      const constraints = kind === 'audio'
         ? { audio: { deviceId: { exact: deviceId } }, video: false }
         : { audio: false, video: { deviceId: { exact: deviceId } } };
 
       const newStream = await navigator.mediaDevices.getUserMedia(constraints);
       const newTrack = kind === 'audio' ? newStream.getAudioTracks()[0] : newStream.getVideoTracks()[0];
-      
+
       const oldTrack = kind === 'audio' ? localStream.getAudioTracks()[0] : localStream.getVideoTracks()[0];
-      
+
       const sender = pcRef.current.getSenders().find(s => s.track?.kind === kind);
       if (sender) await sender.replaceTrack(newTrack);
 
@@ -299,7 +371,7 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
 
   const toggleScreenShare = useCallback(async () => {
     if (!pcRef.current || !localStream) return;
-    
+
     if (isScreenSharing) {
       if (screenTrackRef.current) screenTrackRef.current.stop();
       const videoTrack = localStream.getVideoTracks()[0];
@@ -313,14 +385,14 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
         const screenTrack = screenStream.getVideoTracks()[0];
         const sender = pcRef.current.getSenders().find(s => s.track?.kind === 'video');
         if (sender) await sender.replaceTrack(screenTrack);
-        
+
         screenTrack.onended = async () => {
           const videoTrack = localStream.getVideoTracks()[0];
           if (sender && videoTrack) await sender.replaceTrack(videoTrack);
           setIsScreenSharing(false);
           screenTrackRef.current = null;
         };
-        
+
         screenTrackRef.current = screenTrack;
         setIsScreenSharing(true);
       } catch (err) {
@@ -341,11 +413,11 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     if (dcRef.current?.readyState === 'open') {
       const metadata = { type: 'file_start', sender: localName, name: file.name, size: file.size, fileType: file.type };
       dcRef.current.send(JSON.stringify(metadata));
-      
-      const chunkSize = 16384; 
+
+      const chunkSize = 16384;
       let offset = 0;
       const reader = new FileReader();
-      
+
       reader.onload = (e) => {
         if (e.target?.result && dcRef.current) {
           dcRef.current.send(e.target.result as ArrayBuffer);
@@ -359,7 +431,7 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
           }
         }
       };
-      
+
       const readSlice = (o: number) => {
         const slice = file.slice(offset, o + chunkSize);
         reader.readAsArrayBuffer(slice);
@@ -431,6 +503,7 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     selectedVideoId,
     isScreenSharing,
     chatMessages,
+    telemetry,
     switchDevice,
     flipCamera,
     connect,

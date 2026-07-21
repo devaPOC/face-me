@@ -5,6 +5,7 @@ import (
 	"log"
 	"sync"
 
+	"github.com/devaPOC/face-me/backend/internal/metrics"
 	"github.com/gorilla/websocket"
 )
 
@@ -32,6 +33,7 @@ func GetOrCreateRoom(id string, topic string) *Room {
 		Clients: make(map[*Client]bool),
 	})
 	if !loaded {
+		metrics.ActiveRooms.Inc()
 		log.Printf("Room %s created with topic: %s", id, topic)
 	}
 	return r.(*Room)
@@ -52,10 +54,12 @@ func (r *Room) Join(c *Client) error {
 	defer r.mu.Unlock()
 
 	if len(r.Clients) >= 2 {
+		metrics.RoomRejectionsTotal.Inc()
 		return errors.New("room is full")
 	}
 
 	r.Clients[c] = true
+	metrics.ActiveClients.Inc()
 	log.Printf("Client joined room %s. Total occupants: %d", r.ID, len(r.Clients))
 	return nil
 }
@@ -67,6 +71,7 @@ func (r *Room) Leave(c *Client) {
 
 	if _, ok := r.Clients[c]; ok {
 		delete(r.Clients, c)
+		metrics.ActiveClients.Dec()
 		close(c.Send)
 		log.Printf("Client left room %s. Total occupants: %d", r.ID, len(r.Clients))
 
@@ -81,6 +86,7 @@ func (r *Room) Leave(c *Client) {
 
 	if len(r.Clients) == 0 {
 		Rooms.Delete(r.ID)
+		metrics.ActiveRooms.Dec()
 		log.Printf("Room %s deleted (empty)", r.ID)
 	}
 }

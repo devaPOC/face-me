@@ -29,8 +29,10 @@ import {
   Mic, MicOff, Video, VideoOff,
   MoreVertical, PhoneOff, Hand, SwitchCamera,
   ChevronUp, Loader2, Users, Check, X, Clock,
-  Crown, AlertCircle, MonitorUp, Send, Paperclip
+  Crown, AlertCircle, MonitorUp, Send, Paperclip, Activity
 } from 'lucide-react';
+
+import StatsOverlay from './StatsOverlay';
 
 export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: string, initialTopic: string, isCreator: boolean }) {
   const router = useRouter();
@@ -50,6 +52,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
     selectedVideoId,
     isScreenSharing,
     chatMessages,
+    telemetry,
     switchDevice,
     flipCamera,
     connect,
@@ -72,6 +75,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'people' | 'chat'>('people');
   const [chatText, setChatText] = useState('');
+  const [showStats, setShowStats] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
@@ -244,6 +248,8 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
 
       {/* ─── Video Area ─── */}
       <main className="flex-1 relative w-full h-full">
+        <StatsOverlay telemetry={showStats ? telemetry : null} onClose={() => setShowStats(false)} />
+
         {/* Remote video — full screen when in call */}
         {status === 'IN_CALL' && (
           <>
@@ -577,6 +583,9 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
             <MoreVertical className="w-4 h-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="center">
+            <DropdownMenuItem onClick={() => setShowStats(!showStats)} className="cursor-pointer">
+              <Activity className="w-4 h-4 mr-2" /> Stats for Nerds
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={raiseHand} className="cursor-pointer">
               <Hand className="w-4 h-4 mr-2" /> Raise Hand
             </DropdownMenuItem>
