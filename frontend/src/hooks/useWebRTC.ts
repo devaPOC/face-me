@@ -208,15 +208,13 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     };
 
     stream.getTracks().forEach((track) => {
-        // In a P2P WebRTC connection, tracks are already End-to-End Encrypted natively via DTLS-SRTP.
-        // We do not need Insertable Streams (which corrupt the video payload descriptors).
-        pcRef.current!.addTrack(track, stream!);
+      // In a P2P WebRTC connection, tracks are already End-to-End Encrypted natively via DTLS-SRTP.
+      // We do not need Insertable Streams (which corrupt the video payload descriptors).
+      pcRef.current!.addTrack(track, stream!);
     });
 
     pc.ontrack = (event) => {
-        const receiver = event.receiver;
-        // Native DTLS-SRTP handles decryption, no need for redundant ScriptTransform.
-        setRemoteStream(event.streams[0]);
+      setRemoteStream(event.streams[0]);
     };
 
     pc.onicecandidate = (event) => {
