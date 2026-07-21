@@ -13,12 +13,12 @@ onrtctransform = async (event) => {
   const cryptoKey = await crypto.subtle.importKey(
     'raw',
     rawKey,
-    { name: 'AES-GCM' },
+    { name: 'AES-CTR' },
     false,
     ['encrypt', 'decrypt']
   );
 
-  const iv = new Uint8Array(12); // A fixed IV for demo
+  const iv = new Uint8Array(16); // AES-CTR requires a 16-byte counter block
 
   transformer.readable.pipeThrough(new TransformStream({
     async transform(frame, controller) {
@@ -27,7 +27,14 @@ onrtctransform = async (event) => {
         // Leave some bytes unencrypted for WebRTC to route/packetize properly.
         // For video frames (has type), leave 10 bytes for payload descriptor.
         // For audio frames (no type), leave 1 byte.
-        const unencryptedBytes = frame.type === undefined ? 1 : 10;
+        let unencryptedBytes = 0;
+        if (frame.type === 'key') {
+          unencryptedBytes = 10;
+        } else if (frame.type === 'delta') {
+          unencryptedBytes = 3;
+        } else if (frame.type === undefined) {
+          unencryptedBytes = 1; // Audio
+        }
         
         if (data.length <= unencryptedBytes) {
            controller.enqueue(frame);
@@ -39,7 +46,7 @@ onrtctransform = async (event) => {
 
         if (operation === 'encode') {
           const encryptedPayload = await crypto.subtle.encrypt(
-            { name: 'AES-GCM', iv },
+            { name: 'AES-CTR', counter: iv, length: 64 },
             cryptoKey,
             payload
           );
@@ -50,7 +57,7 @@ onrtctransform = async (event) => {
           frame.data = newData.buffer;
         } else if (operation === 'decode') {
           const decryptedPayload = await crypto.subtle.decrypt(
-            { name: 'AES-GCM', iv },
+            { name: 'AES-CTR', counter: iv, length: 64 },
             cryptoKey,
             payload
           );
