@@ -37,7 +37,7 @@ import StatsOverlay from './StatsOverlay';
 export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: string, initialTopic: string, isCreator: boolean }) {
   const router = useRouter();
 
-  const [isActuallyCreator, setIsActuallyCreator] = useState(() => {
+  const [isActuallyCreator] = useState(() => {
     if (typeof window !== 'undefined') {
       const storedCreator = sessionStorage.getItem(`faceme_creator_${roomId}`) === 'true';
       if (storedCreator) return true;
