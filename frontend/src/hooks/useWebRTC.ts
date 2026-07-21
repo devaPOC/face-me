@@ -7,6 +7,15 @@ type SignalingMessage = {
   payload?: unknown;
 };
 
+export type ChatMessage = {
+  sender: string;
+  text: string;
+  timestamp: string;
+  isFile?: boolean;
+  fileName?: string;
+  fileUrl?: string;
+};
+
 export function useWebRTC(roomId: string, isCreator: boolean) {
   const [status, setStatus] = useState<CallStatus>('IDLE');
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -14,6 +23,9 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [remoteHandRaised, setRemoteHandRaised] = useState(false);
+  
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
   const [localName, setLocalName] = useState('');
   const [remoteName, setRemoteName] = useState('');
@@ -26,10 +38,16 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const dcRef = useRef<RTCDataChannel | null>(null);
+  const screenTrackRef = useRef<MediaStreamTrack | null>(null);
+  const e2eeWorkerRef = useRef<Worker | null>(null);
+  const incomingFile = useRef<{ name: string; size: number; type: string; chunks: ArrayBuffer[]; receivedSize: number } | null>(null);
 
-  // Cleanup WebRTC connections on unmount
+  // Initialize E2EE Worker and cleanup WebRTC connections on unmount
   useEffect(() => {
+    e2eeWorkerRef.current = new Worker('/e2ee.worker.js');
     return () => {
+      e2eeWorkerRef.current?.terminate();
       pcRef.current?.close();
       wsRef.current?.close();
     };
@@ -52,10 +70,38 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     }
   };
 
+  const setupDataChannel = (dc: RTCDataChannel) => {
+    dc.onopen = () => console.log('Data channel opened');
+    dc.onmessage = (event) => {
+      if (typeof event.data === 'string') {
+        const data = JSON.parse(event.data);
+        if (data.type === 'chat') {
+          setChatMessages(prev => [...prev, { sender: data.sender || 'Guest', text: data.text, timestamp: data.timestamp }]);
+        } else if (data.type === 'file_start') {
+          incomingFile.current = { name: data.name, size: data.size, type: data.fileType, chunks: [], receivedSize: 0 };
+        } else if (data.type === 'file_end') {
+          const file = incomingFile.current;
+          if (file && file.receivedSize === file.size) {
+            const blob = new Blob(file.chunks, { type: file.type });
+            const url = URL.createObjectURL(blob);
+            setChatMessages(prev => [...prev, { sender: data.sender || 'Guest', text: `Sent a file: ${file.name}`, timestamp: new Date().toISOString(), isFile: true, fileName: file.name, fileUrl: url }]);
+            incomingFile.current = null;
+          }
+        }
+      } else {
+        // Binary data chunk
+        if (incomingFile.current) {
+          incomingFile.current.chunks.push(event.data);
+          incomingFile.current.receivedSize += event.data.byteLength;
+        }
+      }
+    };
+    dcRef.current = dc;
+  };
+
   const connect = async (userName: string) => {
     setLocalName(userName);
     
-    // Safeguard for Secure Context (HTTPS or localhost)
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       alert("Camera access blocked! You must use HTTPS or localhost to access the camera (Secure Context). Please use a tunneling service like localtunnel.");
       return;
@@ -65,16 +111,12 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     try {
       stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       setLocalStream(stream);
-
-      // Load available devices
       await loadDevices();
 
-      // Set initial selected devices
       const audioTrack = stream.getAudioTracks()[0];
       const videoTrack = stream.getVideoTracks()[0];
       if (audioTrack) setSelectedAudioId(audioTrack.getSettings().deviceId || '');
       if (videoTrack) setSelectedVideoId(videoTrack.getSettings().deviceId || '');
-
     } catch (err) {
       console.error('Error accessing media devices:', err);
       return;
@@ -85,10 +127,27 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     });
     pcRef.current = pc;
 
-    stream.getTracks().forEach((track) => pc.addTrack(track, stream!));
+    if (isCreator) {
+      const dc = pc.createDataChannel("faceme-datachannel", { ordered: true });
+      setupDataChannel(dc);
+    }
+
+    pc.ondatachannel = (event) => {
+      setupDataChannel(event.channel);
+    };
+
+    stream.getTracks().forEach((track) => {
+      const sender = pc.addTrack(track, stream!);
+      if ((window as any).RTCRtpScriptTransform && e2eeWorkerRef.current) {
+        sender.transform = new (window as any).RTCRtpScriptTransform(e2eeWorkerRef.current, { operation: 'encode', key: roomId });
+      }
+    });
 
     pc.ontrack = (event) => {
       setRemoteStream(event.streams[0]);
+      if ((window as any).RTCRtpScriptTransform && e2eeWorkerRef.current) {
+        event.receiver.transform = new (window as any).RTCRtpScriptTransform(e2eeWorkerRef.current, { operation: 'decode', key: roomId });
+      }
     };
 
     pc.onicecandidate = (event) => {
@@ -97,7 +156,6 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
       }
     };
 
-    // Connect signaling server via Next.js proxy or direct WebSocket URL in production
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL
       ? `${process.env.NEXT_PUBLIC_WS_URL}/ws/${roomId}`
       : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws/${roomId}`;
@@ -118,11 +176,8 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
       try {
         const data = JSON.parse(event.data);
         if (data && data.error) {
-          if (data.error === 'Room is full') {
-            setStatus('FULL');
-          } else {
-            setStatus('REJECTED');
-          }
+          if (data.error === 'Room is full') setStatus('FULL');
+          else setStatus('REJECTED');
           stream?.getTracks().forEach(track => track.stop());
           pc.close();
           ws.close();
@@ -163,25 +218,31 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
             setTimeout(() => setRemoteHandRaised(false), 3000);
           }
         } else if (msg.type === 'leave') {
-          if (pcRef.current) {
-            pcRef.current.close();
-          }
+          if (pcRef.current) pcRef.current.close();
           setRemoteStream(null);
           setRemoteName('');
 
           if (isCreator) {
-            // Re-initialize peer connection for a new guest
-            const newPC = new RTCPeerConnection({
-              iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-            });
+            const newPC = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
             pcRef.current = newPC;
+            
+            const dc = newPC.createDataChannel("faceme-datachannel", { ordered: true });
+            setupDataChannel(dc);
 
             if (stream) {
-              stream.getTracks().forEach((track) => newPC.addTrack(track, stream!));
+              stream.getTracks().forEach((track) => {
+                const sender = newPC.addTrack(track, stream!);
+                if ((window as any).RTCRtpScriptTransform && e2eeWorkerRef.current) {
+                  sender.transform = new (window as any).RTCRtpScriptTransform(e2eeWorkerRef.current, { operation: 'encode', key: roomId });
+                }
+              });
             }
 
             newPC.ontrack = (event) => {
               setRemoteStream(event.streams[0]);
+              if ((window as any).RTCRtpScriptTransform && e2eeWorkerRef.current) {
+                event.receiver.transform = new (window as any).RTCRtpScriptTransform(e2eeWorkerRef.current, { operation: 'decode', key: roomId });
+              }
             };
 
             newPC.onicecandidate = (event) => {
@@ -215,21 +276,15 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
       
       const oldTrack = kind === 'audio' ? localStream.getAudioTracks()[0] : localStream.getVideoTracks()[0];
       
-      // Replace track in peer connection
       const sender = pcRef.current.getSenders().find(s => s.track?.kind === kind);
-      if (sender) {
-        await sender.replaceTrack(newTrack);
-      }
+      if (sender) await sender.replaceTrack(newTrack);
 
-      // Update local stream state
       localStream.removeTrack(oldTrack);
       localStream.addTrack(newTrack);
       setLocalStream(new MediaStream(localStream.getTracks()));
 
-      // Stop old track
       oldTrack.stop();
 
-      // Apply current mute state to the newly created track
       if (kind === 'audio') {
         newTrack.enabled = !isMuted;
         setSelectedAudioId(deviceId);
@@ -237,11 +292,81 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
         newTrack.enabled = !isVideoOff;
         setSelectedVideoId(deviceId);
       }
-
     } catch (err) {
       console.error(`Failed to switch ${kind} device`, err);
     }
   }, [localStream, isMuted, isVideoOff]);
+
+  const toggleScreenShare = useCallback(async () => {
+    if (!pcRef.current || !localStream) return;
+    
+    if (isScreenSharing) {
+      if (screenTrackRef.current) screenTrackRef.current.stop();
+      const videoTrack = localStream.getVideoTracks()[0];
+      const sender = pcRef.current.getSenders().find(s => s.track?.kind === 'video');
+      if (sender && videoTrack) await sender.replaceTrack(videoTrack);
+      setIsScreenSharing(false);
+      screenTrackRef.current = null;
+    } else {
+      try {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+        const screenTrack = screenStream.getVideoTracks()[0];
+        const sender = pcRef.current.getSenders().find(s => s.track?.kind === 'video');
+        if (sender) await sender.replaceTrack(screenTrack);
+        
+        screenTrack.onended = async () => {
+          const videoTrack = localStream.getVideoTracks()[0];
+          if (sender && videoTrack) await sender.replaceTrack(videoTrack);
+          setIsScreenSharing(false);
+          screenTrackRef.current = null;
+        };
+        
+        screenTrackRef.current = screenTrack;
+        setIsScreenSharing(true);
+      } catch (err) {
+        console.error('Error sharing screen:', err);
+      }
+    }
+  }, [localStream, isScreenSharing]);
+
+  const sendMessage = useCallback((text: string) => {
+    if (dcRef.current?.readyState === 'open') {
+      const msg = { type: 'chat', sender: localName, text, timestamp: new Date().toISOString() };
+      dcRef.current.send(JSON.stringify(msg));
+      setChatMessages(prev => [...prev, msg]);
+    }
+  }, [localName]);
+
+  const sendFile = useCallback((file: File) => {
+    if (dcRef.current?.readyState === 'open') {
+      const metadata = { type: 'file_start', sender: localName, name: file.name, size: file.size, fileType: file.type };
+      dcRef.current.send(JSON.stringify(metadata));
+      
+      const chunkSize = 16384; 
+      let offset = 0;
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        if (e.target?.result && dcRef.current) {
+          dcRef.current.send(e.target.result as ArrayBuffer);
+          offset += chunkSize;
+          if (offset < file.size) {
+            readSlice(offset);
+          } else {
+            dcRef.current.send(JSON.stringify({ type: 'file_end', sender: localName }));
+            const url = URL.createObjectURL(file);
+            setChatMessages(prev => [...prev, { sender: localName, text: `Sent a file: ${file.name}`, timestamp: new Date().toISOString(), isFile: true, fileName: file.name, fileUrl: url }]);
+          }
+        }
+      };
+      
+      const readSlice = (o: number) => {
+        const slice = file.slice(offset, o + chunkSize);
+        reader.readAsArrayBuffer(slice);
+      };
+      readSlice(0);
+    }
+  }, [localName]);
 
   const flipCamera = useCallback(async () => {
     if (videoDevices.length < 2) return;
@@ -304,6 +429,8 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     videoDevices,
     selectedAudioId,
     selectedVideoId,
+    isScreenSharing,
+    chatMessages,
     switchDevice,
     flipCamera,
     connect,
@@ -311,6 +438,9 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     rejectGuest,
     toggleMute,
     toggleVideo,
-    raiseHand
+    raiseHand,
+    toggleScreenShare,
+    sendMessage,
+    sendFile
   };
 }

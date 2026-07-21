@@ -163,3 +163,76 @@ The React client controls page interactions using a WebRTC hook. The connection 
 * **`PROMPTING_CREATOR`**: (Creator only) Displays a modal interface asking to "Admit" or "Reject" the knocking guest.
 * **`IN_CALL`**: The signaling handshake completed and WebRTC P2P stream is active.
 * **`REJECTED`**: (Guest only) The creator declined the knock request; local media tracks are stopped and cleanup is run.
+
+---
+
+## 5. Level 2 Features
+
+### Screen Share Track Replacement (Zero-Renegotiation)
+
+```mermaid
+sequenceDiagram
+    actor User as Presenter
+    participant Hook as useWebRTC
+    participant PC as RTCPeerConnection (Sender)
+    participant Receiver as Remote Peer
+
+    User->>Hook: toggleScreenShare()
+    Hook->>navigator.mediaDevices: getDisplayMedia({video:true})
+    navigator.mediaDevices-->>Hook: Screen MediaStream
+    Hook->>PC: getSenders().find(kind === 'video')
+    Hook->>PC: sender.replaceTrack(screenTrack)
+    Note over PC, Receiver: Media frames now source from screen.<br>NO SDP renegotiation triggered.
+    
+    User->>Hook: Stops sharing (via browser UI)
+    Hook->>PC: sender.replaceTrack(cameraTrack)
+```
+
+### P2P DataChannel Payload Structure
+
+Data flow completely bypasses the Go backend.
+
+```mermaid
+sequenceDiagram
+    actor Caller
+    participant DC as RTCDataChannel
+    actor Callee
+
+    Note over Caller, Callee: Sending Text Chat
+    Caller->>DC: {"type":"chat", "text":"Hello!", "sender":"Alice"}
+    DC->>Callee: onmessage JSON parsing
+
+    Note over Caller, Callee: Sending File Chunking
+    Caller->>DC: {"type":"file_start", "name":"image.png", "size":120000}
+    DC->>Callee: init array buffer
+    loop file chunks
+      Caller->>DC: ArrayBuffer (16KB chunk)
+      DC->>Callee: binary frame appended
+    end
+    Caller->>DC: {"type":"file_end"}
+    DC->>Callee: Blob assembled -> UI link
+```
+
+### WebRTC Encoded Transform (E2EE)
+
+```mermaid
+sequenceDiagram
+    participant PC as RTCPeerConnection
+    participant Sender as RTCRtpSender
+    participant Worker as e2ee.worker.js
+    participant Receiver as RTCRtpReceiver
+
+    Note over PC, Worker: Initialize Transform
+    PC->>Sender: sender.transform = new RTCRtpScriptTransform(worker, {op:'encode', key})
+    
+    Sender->>Worker: Raw Audio/Video Frames
+    Note over Worker: AES-GCM Encrypt Frame Payload
+    Worker->>Sender: Encrypted Frames
+    
+    Sender->>Receiver: Encrypted SRTP Packets over Network
+    
+    Receiver->>Worker: Encrypted Audio/Video Frames
+    Note over Worker: AES-GCM Decrypt Frame Payload
+    Worker->>Receiver: Raw Audio/Video Frames
+    Receiver->>PC: Render to HTMLVideoElement
+```

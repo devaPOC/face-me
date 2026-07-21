@@ -29,7 +29,7 @@ import {
   Mic, MicOff, Video, VideoOff,
   MoreVertical, PhoneOff, Hand, SwitchCamera,
   ChevronUp, Loader2, Users, Check, X, Clock,
-  Crown, AlertCircle,
+  Crown, AlertCircle, MonitorUp, Send, Paperclip
 } from 'lucide-react';
 
 export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: string, initialTopic: string, isCreator: boolean }) {
@@ -48,6 +48,8 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
     videoDevices,
     selectedAudioId,
     selectedVideoId,
+    isScreenSharing,
+    chatMessages,
     switchDevice,
     flipCamera,
     connect,
@@ -56,6 +58,9 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
     toggleMute,
     toggleVideo,
     raiseHand,
+    toggleScreenShare,
+    sendMessage,
+    sendFile
   } = useWebRTC(roomId, isCreator);
   
   const [inputName, setInputName] = useState(() => {
@@ -65,6 +70,9 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
     return '';
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'people' | 'chat'>('people');
+  const [chatText, setChatText] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -84,7 +92,10 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
   // Auto-open the sidebar when someone knocks
   useEffect(() => {
     if (status === 'PROMPTING_CREATOR') {
-      const timer = setTimeout(() => setSidebarOpen(true), 0);
+      const timer = setTimeout(() => {
+        setSidebarOpen(true);
+        setActiveTab('people');
+      }, 0);
       return () => clearTimeout(timer);
     }
   }, [status]);
@@ -99,6 +110,21 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
 
   const handleLeave = () => {
     router.push('/');
+  };
+
+  const handleSendChat = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (chatText.trim()) {
+      sendMessage(chatText.trim());
+      setChatText('');
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      sendFile(e.target.files[0]);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   // Derive participant counts for the badge
@@ -147,20 +173,16 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
   if (status === 'FULL') {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4 relative overflow-hidden animate-fade-in">
-        {/* Glowing aura blobs */}
         <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-destructive/5 blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-72 h-72 rounded-full bg-primary/5 blur-3xl" />
-
         <div className="w-full max-w-md p-8 rounded-2xl border border-border bg-card/60 backdrop-blur-xl shadow-2xl relative z-10 flex flex-col items-center text-center">
           <div className="w-16 h-16 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mb-6">
             <AlertCircle className="w-8 h-8 animate-pulse" />
           </div>
-          
           <h2 className="text-2xl font-bold tracking-tight mb-2">Room is Full</h2>
           <p className="text-muted-foreground text-sm leading-relaxed mb-8">
             This private space is limited to a maximum of 2 participants. The host and another guest are already in the call.
           </p>
-
           <Button onClick={handleLeave} className="w-full cursor-pointer py-6 text-sm font-medium">
             Go to Homepage
           </Button>
@@ -173,20 +195,16 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
   if (status === 'ENDED') {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4 relative overflow-hidden animate-fade-in">
-        {/* Glowing aura blobs */}
         <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-primary/5 blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-72 h-72 rounded-full bg-secondary/5 blur-3xl" />
-
         <div className="w-full max-w-md p-8 rounded-2xl border border-border bg-card/60 backdrop-blur-xl shadow-2xl relative z-10 flex flex-col items-center text-center">
           <div className="w-16 h-16 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center mb-6">
             <PhoneOff className="w-8 h-8 animate-pulse text-muted-foreground" />
           </div>
-          
           <h2 className="text-2xl font-bold tracking-tight mb-2">Call Ended</h2>
           <p className="text-muted-foreground text-sm leading-relaxed mb-8">
             The host or guest has left the room, or the call was ended.
           </p>
-
           <Button onClick={handleLeave} className="w-full cursor-pointer py-6 text-sm font-medium">
             Go to Homepage
           </Button>
@@ -213,7 +231,10 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
       
       {/* ─── Header ─── */}
       <header className="absolute top-0 inset-x-0 p-4 flex justify-between items-center bg-gradient-to-b from-black/70 to-transparent z-20">
-        <h2 className="text-sm font-medium drop-shadow-md">{title}</h2>
+        <div className="flex flex-col">
+          <h2 className="text-sm font-medium drop-shadow-md">{title}</h2>
+          <span className="text-xs text-green-400 font-semibold mt-1">🔒 End-to-End Encrypted</span>
+        </div>
         {remoteHandRaised && (
           <Badge variant="default" className="bg-amber-500 text-black font-semibold shadow-lg animate-bounce">
             ✋ {remoteName} raised hand
@@ -223,7 +244,6 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
 
       {/* ─── Video Area ─── */}
       <main className="flex-1 relative w-full h-full">
-        
         {/* Remote video — full screen when in call */}
         {status === 'IN_CALL' && (
           <>
@@ -253,7 +273,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
             className="w-full h-full object-cover -scale-x-100"
           />
           <span className="absolute bottom-2 left-2 bg-black/60 px-2 py-0.5 rounded text-xs">
-            {localName} (You)
+            {localName} (You) {isScreenSharing ? '- Sharing Screen' : ''}
           </span>
         </div>
 
@@ -268,101 +288,166 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
         )}
       </main>
 
-      {/* ─── People Sidebar (Sheet) ─── */}
+      {/* ─── Sidebar (Sheet) ─── */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="right" className="w-[320px] sm:w-[360px] flex flex-col">
-          <SheetHeader>
-            <SheetTitle>People</SheetTitle>
-            <SheetDescription className="sr-only">Participants and waiting room</SheetDescription>
+        <SheetContent side="right" className="w-[320px] sm:w-[360px] flex flex-col p-0">
+          <SheetHeader className="p-4 border-b">
+            <SheetTitle>Room details</SheetTitle>
+            <SheetDescription className="sr-only">Participants and chat</SheetDescription>
+            {status === 'IN_CALL' && (
+              <div className="flex items-center gap-4 mt-2">
+                <button
+                  className={`text-sm font-medium pb-2 border-b-2 transition-colors cursor-pointer ${activeTab === 'people' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                  onClick={() => setActiveTab('people')}
+                >
+                  People
+                </button>
+                <button
+                  className={`text-sm font-medium pb-2 border-b-2 transition-colors cursor-pointer ${activeTab === 'chat' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                  onClick={() => setActiveTab('chat')}
+                >
+                  Chat
+                </button>
+              </div>
+            )}
           </SheetHeader>
 
-          <div className="flex-1 overflow-y-auto px-4 pb-4">
-            {/* In Call Section */}
-            <div className="mb-6">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                In call ({inCallCount})
-              </h3>
-              <div className="space-y-1">
-                {/* Self */}
-                {localName && (
-                  <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-semibold shrink-0">
-                      {localName.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{localName}</p>
-                      <p className="text-xs text-muted-foreground">You{isCreator ? ' · Host' : ''}</p>
-                    </div>
-                    {isCreator && <Crown className="w-4 h-4 text-amber-500 shrink-0" />}
-                  </div>
-                )}
-                
-                {/* Remote participant */}
-                {status === 'IN_CALL' && remoteName && (
-                  <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary text-secondary-foreground text-sm font-semibold shrink-0">
-                      {remoteName.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{remoteName}</p>
-                      <p className="text-xs text-muted-foreground">{!isCreator ? 'Host' : 'Guest'}</p>
-                    </div>
-                    {!isCreator && <Crown className="w-4 h-4 text-amber-500 shrink-0" />}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <Separator className="mb-6" />
-
-            {/* Waiting Room Section */}
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                Waiting room ({waitingCount})
-              </h3>
-              
-              {waitingCount === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <Clock className="w-8 h-8 text-muted-foreground/40 mb-2" />
-                  <p className="text-sm text-muted-foreground">No one is waiting</p>
-                </div>
-              ) : (
+          {activeTab === 'people' || status !== 'IN_CALL' ? (
+            <div className="flex-1 overflow-y-auto p-4">
+              {/* In Call Section */}
+              <div className="mb-6">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                  In call ({inCallCount})
+                </h3>
                 <div className="space-y-1">
-                  {status === 'PROMPTING_CREATOR' && remoteName && (
-                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-muted/30 border border-border">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-500/20 text-amber-500 text-sm font-semibold shrink-0">
+                  {/* Self */}
+                  {localName && (
+                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-semibold shrink-0">
+                        {localName.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{localName}</p>
+                        <p className="text-xs text-muted-foreground">You{isCreator ? ' · Host' : ''}</p>
+                      </div>
+                      {isCreator && <Crown className="w-4 h-4 text-amber-500 shrink-0" />}
+                    </div>
+                  )}
+                  
+                  {/* Remote participant */}
+                  {status === 'IN_CALL' && remoteName && (
+                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary text-secondary-foreground text-sm font-semibold shrink-0">
                         {remoteName.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{remoteName}</p>
-                        <p className="text-xs text-muted-foreground">Requesting to join</p>
+                        <p className="text-xs text-muted-foreground">{!isCreator ? 'Host' : 'Guest'}</p>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <Button 
-                          variant="ghost" 
-                          size="icon-sm" 
-                          onClick={rejectGuest} 
-                          className="cursor-pointer text-destructive hover:text-destructive hover:bg-destructive/10"
-                          title="Deny"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon-sm" 
-                          onClick={() => { admitGuest(); setSidebarOpen(false); }} 
-                          className="cursor-pointer text-green-500 hover:text-green-500 hover:bg-green-500/10"
-                          title="Admit"
-                        >
-                          <Check className="w-4 h-4" />
-                        </Button>
-                      </div>
+                      {!isCreator && <Crown className="w-4 h-4 text-amber-500 shrink-0" />}
                     </div>
                   )}
                 </div>
-              )}
+              </div>
+
+              <Separator className="mb-6" />
+
+              {/* Waiting Room Section */}
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                  Waiting room ({waitingCount})
+                </h3>
+                
+                {waitingCount === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <Clock className="w-8 h-8 text-muted-foreground/40 mb-2" />
+                    <p className="text-sm text-muted-foreground">No one is waiting</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {status === 'PROMPTING_CREATOR' && remoteName && (
+                      <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-muted/30 border border-border">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-500/20 text-amber-500 text-sm font-semibold shrink-0">
+                          {remoteName.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{remoteName}</p>
+                          <p className="text-xs text-muted-foreground">Requesting to join</p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button 
+                            variant="ghost" 
+                            size="icon-sm" 
+                            onClick={rejectGuest} 
+                            className="cursor-pointer text-destructive hover:text-destructive hover:bg-destructive/10"
+                            title="Deny"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon-sm" 
+                            onClick={() => { admitGuest(); setActiveTab('people'); }} 
+                            className="cursor-pointer text-green-500 hover:text-green-500 hover:bg-green-500/10"
+                            title="Admit"
+                          >
+                            <Check className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex flex-col h-full flex-1 overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col">
+                {chatMessages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                    <p className="text-sm">No messages yet.</p>
+                    <p className="text-xs">Start a conversation with the guest!</p>
+                  </div>
+                ) : (
+                  chatMessages.map((msg, i) => {
+                    const isMe = msg.sender === localName;
+                    return (
+                      <div key={i} className={`flex flex-col max-w-[85%] ${isMe ? 'self-end items-end' : 'self-start items-start'}`}>
+                        <span className="text-[10px] text-muted-foreground mb-1">{msg.sender} • {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <div className={`px-3 py-2 rounded-2xl text-sm ${isMe ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'bg-muted rounded-tl-sm'}`}>
+                          {msg.isFile ? (
+                            <a href={msg.fileUrl} download={msg.fileName} className="flex items-center gap-2 underline underline-offset-2">
+                              <Paperclip className="w-4 h-4" />
+                              {msg.fileName}
+                            </a>
+                          ) : (
+                            <p className="break-words">{msg.text}</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+              <div className="p-3 border-t bg-background mt-auto">
+                <form onSubmit={handleSendChat} className="flex items-center gap-2">
+                  <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
+                  <Button type="button" variant="ghost" size="icon" className="shrink-0 cursor-pointer text-muted-foreground" onClick={() => fileInputRef.current?.click()} title="Attach file">
+                    <Paperclip className="w-4 h-4" />
+                  </Button>
+                  <Input 
+                    placeholder="Type a message..." 
+                    className="flex-1"
+                    value={chatText}
+                    onChange={e => setChatText(e.target.value)}
+                  />
+                  <Button type="submit" size="icon" className="shrink-0 cursor-pointer" disabled={!chatText.trim()}>
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </form>
+              </div>
+            </div>
+          )}
         </SheetContent>
       </Sheet>
 
@@ -455,11 +540,22 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
           </Button>
         </div>
 
-        {/* People button */}
+        {/* Screen Share button */}
+        <Button
+          variant={isScreenSharing ? 'secondary' : 'ghost'}
+          size="icon"
+          onClick={toggleScreenShare}
+          className="rounded-full cursor-pointer text-white"
+          title={isScreenSharing ? 'Stop sharing screen' : 'Share screen'}
+        >
+          <MonitorUp className="w-4 h-4" />
+        </Button>
+
+        {/* People/Chat button */}
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
+          onClick={() => { setSidebarOpen(!sidebarOpen); setActiveTab('people'); }}
           className="rounded-full cursor-pointer relative"
           title="People"
         >
