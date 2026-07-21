@@ -1,4 +1,4 @@
-# FaceMe — Peer-to-Peer FaceTime Clone
+# FaceMe: Peer-to-Peer FaceTime Clone
 
 FaceMe is a production-ready, ultra-low-resource, strict 1-to-1 peer-to-peer video calling application.
 
