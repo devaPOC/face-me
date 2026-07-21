@@ -85,7 +85,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
     sendMessage,
     sendFile
   } = useWebRTC(roomId, isActuallyCreator);
-  
+
   const [inputName, setInputName] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('face-me-username') || '';
@@ -105,7 +105,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
     if (localVideoRef.current && localStream) {
       localVideoRef.current.srcObject = localStream;
     }
-  }, [localStream, status]); 
+  }, [localStream, status]);
 
   useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {
@@ -167,9 +167,9 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
             Room ID: <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">{roomId}</span>
           </p>
           <form onSubmit={handleJoin} className="flex flex-col gap-4 text-left">
-            <Input 
-              type="text" 
-              placeholder="Your name" 
+            <Input
+              type="text"
+              placeholder="Your name"
               value={inputName}
               onChange={(e) => setInputName(e.target.value)}
               autoFocus
@@ -252,7 +252,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
   /* ─── IN CALL / WAITING ─── */
   return (
     <div className="flex flex-col h-screen w-screen bg-black text-white overflow-hidden">
-      
+
       {/* ─── Header ─── */}
       <header className="absolute top-0 inset-x-0 p-4 flex justify-between items-center bg-gradient-to-b from-black/70 to-transparent z-20">
         <div className="flex flex-col">
@@ -273,9 +273,9 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
         {/* Remote video — full screen when in call */}
         {status === 'IN_CALL' && (
           <>
-            <video 
-              ref={remoteVideoRef} 
-              autoPlay 
+            <video
+              ref={remoteVideoRef}
+              autoPlay
               playsInline
               className="w-full h-full object-cover"
             />
@@ -291,11 +291,11 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
             ? 'absolute bottom-28 right-5 w-[140px] h-[200px] z-30 rounded-xl overflow-hidden border border-white/20 shadow-2xl'
             : 'w-full h-full'
         }>
-          <video 
-            ref={localVideoRef} 
-            autoPlay 
-            playsInline 
-            muted 
+          <video
+            ref={localVideoRef}
+            autoPlay
+            playsInline
+            muted
             className="w-full h-full object-cover -scale-x-100"
           />
           <span className="absolute bottom-2 left-2 bg-black/60 px-2 py-0.5 rounded text-xs">
@@ -359,7 +359,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
                       {isActuallyCreator && <Crown className="w-4 h-4 text-amber-500 shrink-0" />}
                     </div>
                   )}
-                  
+
                   {/* Remote participant */}
                   {status === 'IN_CALL' && remoteName && (
                     <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/50 transition-colors">
@@ -383,7 +383,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
                   Waiting room ({waitingCount})
                 </h3>
-                
+
                 {waitingCount === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 text-center">
                     <Clock className="w-8 h-8 text-muted-foreground/40 mb-2" />
@@ -401,19 +401,19 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
                           <p className="text-xs text-muted-foreground">Requesting to join</p>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
-                          <Button 
-                            variant="ghost" 
-                            size="icon-sm" 
-                            onClick={rejectGuest} 
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={rejectGuest}
                             className="cursor-pointer text-destructive hover:text-destructive hover:bg-destructive/10"
                             title="Deny"
                           >
                             <X className="w-4 h-4" />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon-sm" 
-                            onClick={() => { admitGuest(); setActiveTab('people'); }} 
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => { admitGuest(); setActiveTab('people'); }}
                             className="cursor-pointer text-green-500 hover:text-green-500 hover:bg-green-500/10"
                             title="Admit"
                           >
@@ -461,8 +461,8 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
                   <Button type="button" variant="ghost" size="icon" className="shrink-0 cursor-pointer text-muted-foreground" onClick={() => fileInputRef.current?.click()} title="Attach file">
                     <Paperclip className="w-4 h-4" />
                   </Button>
-                  <Input 
-                    placeholder="Type a message..." 
+                  <Input
+                    placeholder="Type a message..."
                     className="flex-1"
                     value={chatText}
                     onChange={e => setChatText(e.target.value)}
