@@ -41,21 +41,24 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    if (typeof window !== 'undefined') {
-      const storedCreator = sessionStorage.getItem(`faceme_creator_${roomId}`) === 'true';
-      if (storedCreator) {
-        setIsActuallyCreator(true);
-      } else if (isCreator) {
-        setIsActuallyCreator(false);
+    const timer = setTimeout(() => {
+      setMounted(true);
+      if (typeof window !== 'undefined') {
+        const storedCreator = sessionStorage.getItem(`faceme_creator_${roomId}`) === 'true';
+        if (storedCreator) {
+          setIsActuallyCreator(true);
+        } else if (isCreator) {
+          setIsActuallyCreator(false);
+        }
+  
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('creator')) {
+          url.searchParams.delete('creator');
+          window.history.replaceState({}, '', url.toString());
+        }
       }
-
-      const url = new URL(window.location.href);
-      if (url.searchParams.has('creator')) {
-        url.searchParams.delete('creator');
-        window.history.replaceState({}, '', url.toString());
-      }
-    }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [roomId, isCreator]);
 
   const {
