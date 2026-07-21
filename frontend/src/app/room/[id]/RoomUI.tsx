@@ -37,25 +37,26 @@ import StatsOverlay from './StatsOverlay';
 export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: string, initialTopic: string, isCreator: boolean }) {
   const router = useRouter();
 
-  const [isActuallyCreator] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const storedCreator = sessionStorage.getItem(`faceme_creator_${roomId}`) === 'true';
-      if (storedCreator) return true;
-      if (isCreator) return false; // Copied link without session storage -> Downgrade to guest
-    }
-    return isCreator;
-  });
+  const [isActuallyCreator, setIsActuallyCreator] = useState(isCreator);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Clean up the URL so it's safe to copy
+    setMounted(true);
     if (typeof window !== 'undefined') {
+      const storedCreator = sessionStorage.getItem(`faceme_creator_${roomId}`) === 'true';
+      if (storedCreator) {
+        setIsActuallyCreator(true);
+      } else if (isCreator) {
+        setIsActuallyCreator(false);
+      }
+
       const url = new URL(window.location.href);
       if (url.searchParams.has('creator')) {
         url.searchParams.delete('creator');
         window.history.replaceState({}, '', url.toString());
       }
     }
-  }, []);
+  }, [roomId, isCreator]);
 
   const {
     status,
@@ -248,6 +249,8 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
   }
 
   const title = initialTopic ? `Meet: ${initialTopic}` : `Room: ${roomId}`;
+
+  if (!mounted) return null;
 
   /* ─── IN CALL / WAITING ─── */
   return (
