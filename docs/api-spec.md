@@ -84,7 +84,7 @@ The signaling server operates as a transparent pub/sub router. All messages sent
 
 ```typescript
 type SignalingMessage = {
-  type: 'knock' | 'admit' | 'reject' | 'ready' | 'offer' | 'answer' | 'ice_candidate' | 'action';
+  type: 'knock' | 'admit' | 'reject' | 'ready' | 'offer' | 'answer' | 'ice_candidate' | 'action' | 'leave';
   payload?: any;
 };
 ```
@@ -208,5 +208,17 @@ type SignalingMessage = {
     "payload": {
       "action": "raise_hand"
     }
+  }
+  ```
+
+#### `leave`
+
+* **Direction:** Peer $\leftrightarrow$ Server $\leftrightarrow$ Peer (Bi-directional)
+* **Description:** Broadcasts when a peer gracefully leaves the room, prompting the other peer to reset their connection or cleanup.
+* **Payload:** No payload is required.
+
+  ```json
+  {
+    "type": "leave"
   }
   ```

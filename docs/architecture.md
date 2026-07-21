@@ -163,10 +163,12 @@ The React client controls page interactions using a WebRTC hook. The connection 
 * **`PROMPTING_CREATOR`**: (Creator only) Displays a modal interface asking to "Admit" or "Reject" the knocking guest.
 * **`IN_CALL`**: The signaling handshake completed and WebRTC P2P stream is active.
 * **`REJECTED`**: (Guest only) The creator declined the knock request; local media tracks are stopped and cleanup is run.
+* **`FULL`**: The room the client is trying to join already has two active participants.
+* **`ENDED`**: (Guest only) The call has ended or the creator left, tearing down the connection.
 
 ---
 
-## 5. Level 2 Features
+## 5. Features
 
 ### Screen Share Track Replacement (Zero-Renegotiation)
 
@@ -239,7 +241,7 @@ sequenceDiagram
 
 ---
 
-## 6. Level 3: Observability & Telemetry
+## 6. Observability & Telemetry
 
 ### Client-Side Metric Parsing (Stats for Nerds)
 
