@@ -77,7 +77,6 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
   // Telemetry Polling Loop
   useEffect(() => {
     if (status !== 'IN_CALL') {
-      setTelemetry(null);
       return;
     }
 

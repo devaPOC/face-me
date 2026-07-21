@@ -183,7 +183,7 @@ sequenceDiagram
     Hook->>PC: getSenders().find(kind === 'video')
     Hook->>PC: sender.replaceTrack(screenTrack)
     Note over PC, Receiver: Media frames now source from screen.<br>NO SDP renegotiation triggered.
-    
+
     User->>Hook: Stops sharing (via browser UI)
     Hook->>PC: sender.replaceTrack(cameraTrack)
 ```
@@ -224,13 +224,13 @@ sequenceDiagram
 
     Note over PC, Worker: Initialize Transform
     PC->>Sender: sender.transform = new RTCRtpScriptTransform(worker, {op:'encode', key})
-    
+
     Sender->>Worker: Raw Audio/Video Frames
     Note over Worker: AES-GCM Encrypt Frame Payload
     Worker->>Sender: Encrypted Frames
-    
+
     Sender->>Receiver: Encrypted SRTP Packets over Network
-    
+
     Receiver->>Worker: Encrypted Audio/Video Frames
     Note over Worker: AES-GCM Decrypt Frame Payload
     Worker->>Receiver: Raw Audio/Video Frames
@@ -263,12 +263,14 @@ We iterate through the generated `RTCStatsReport` map to extract keys matching s
 The Go signaling server exposes a lightweight Prometheus metrics endpoint at `GET /metrics`.
 
 **Exposed Application Metrics:**
+
 * `faceme_active_rooms` (Gauge): Total active rooms held in the signaling `sync.Map`.
 * `faceme_active_clients` (Gauge): Total connected WebSocket peers across all active rooms.
 * `faceme_websocket_messages_total` (CounterVec): Total signaling messages routed through the server, labeled by the JSON `type` field (e.g., `offer`, `answer`, `ice_candidate`, `knock`).
 * `faceme_room_rejections_total` (Counter): Number of times a 3rd user attempted to join a room that was already full.
 
 **Sample Prometheus Scrape Configuration (`prometheus.yml`):**
+
 ```yaml
 scrape_configs:
   - job_name: 'faceme_backend'
