@@ -37,6 +37,28 @@ import StatsOverlay from './StatsOverlay';
 export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: string, initialTopic: string, isCreator: boolean }) {
   const router = useRouter();
 
+  const [isActuallyCreator, setIsActuallyCreator] = useState(isCreator);
+
+  useEffect(() => {
+    // If the user joined with creator=true, but they didn't create the room in this session,
+    // they might have just copied the link. We should verify via sessionStorage.
+    const storedCreator = sessionStorage.getItem(`faceme_creator_${roomId}`) === 'true';
+    if (storedCreator) {
+      setIsActuallyCreator(true);
+    } else if (isCreator) {
+      // They have ?creator=true but no session storage! They copied the link.
+      // Downgrade them to guest.
+      setIsActuallyCreator(false);
+    }
+    
+    // Clean up the URL so it's safe to copy
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('creator')) {
+      url.searchParams.delete('creator');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [roomId, isCreator]);
+
   const {
     status,
     localStream,
@@ -64,7 +86,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
     toggleScreenShare,
     sendMessage,
     sendFile
-  } = useWebRTC(roomId, isCreator);
+  } = useWebRTC(roomId, isActuallyCreator);
   
   const [inputName, setInputName] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -155,7 +177,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
               autoFocus
             />
             <Button type="submit" className="w-full cursor-pointer">
-              {isCreator ? 'Start Call' : 'Knock to Join'}
+              {isActuallyCreator ? 'Start Call' : 'Knock to Join'}
             </Button>
           </form>
         </div>
@@ -334,9 +356,9 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{localName}</p>
-                        <p className="text-xs text-muted-foreground">You{isCreator ? ' · Host' : ''}</p>
+                        <p className="text-xs text-muted-foreground">You{isActuallyCreator ? ' · Host' : ''}</p>
                       </div>
-                      {isCreator && <Crown className="w-4 h-4 text-amber-500 shrink-0" />}
+                      {isActuallyCreator && <Crown className="w-4 h-4 text-amber-500 shrink-0" />}
                     </div>
                   )}
                   
@@ -348,9 +370,9 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{remoteName}</p>
-                        <p className="text-xs text-muted-foreground">{!isCreator ? 'Host' : 'Guest'}</p>
+                        <p className="text-xs text-muted-foreground">{!isActuallyCreator ? 'Host' : 'Guest'}</p>
                       </div>
-                      {!isCreator && <Crown className="w-4 h-4 text-amber-500 shrink-0" />}
+                      {!isActuallyCreator && <Crown className="w-4 h-4 text-amber-500 shrink-0" />}
                     </div>
                   )}
                 </div>

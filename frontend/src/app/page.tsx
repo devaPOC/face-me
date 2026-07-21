@@ -26,7 +26,8 @@ export default function Home() {
       console.error('Failed to create room:', err);
     }
 
-    router.push(`/room/${newRoomId}?creator=true`);
+    sessionStorage.setItem(`faceme_creator_${newRoomId}`, 'true');
+    router.push(`/room/${newRoomId}`);
   };
 
   const handleJoinRoom = (e: React.FormEvent) => {
