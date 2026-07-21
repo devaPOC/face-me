@@ -250,7 +250,7 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
           if (data.error === 'Room is full') setStatus('FULL');
           else setStatus('REJECTED');
           stream?.getTracks().forEach(track => track.stop());
-          pc.close();
+          pcRef.current?.close();
           ws.close();
           return;
         }
@@ -268,21 +268,21 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
         } else if (msg.type === 'reject' && !isCreator) {
           setStatus('REJECTED');
           stream?.getTracks().forEach(track => track.stop());
-          pc.close();
+          pcRef.current?.close();
           ws.close();
         } else if (msg.type === 'ready' && isCreator) {
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
+          const offer = await pcRef.current!.createOffer();
+          await pcRef.current!.setLocalDescription(offer);
           ws.send(JSON.stringify({ type: 'offer', payload: offer }));
         } else if (msg.type === 'offer') {
-          await pc.setRemoteDescription(new RTCSessionDescription(payload));
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
+          await pcRef.current!.setRemoteDescription(new RTCSessionDescription(payload));
+          const answer = await pcRef.current!.createAnswer();
+          await pcRef.current!.setLocalDescription(answer);
           ws.send(JSON.stringify({ type: 'answer', payload: answer }));
         } else if (msg.type === 'answer') {
-          await pc.setRemoteDescription(new RTCSessionDescription(payload));
+          await pcRef.current!.setRemoteDescription(new RTCSessionDescription(payload));
         } else if (msg.type === 'ice_candidate') {
-          await pc.addIceCandidate(new RTCIceCandidate(payload));
+          await pcRef.current!.addIceCandidate(new RTCIceCandidate(payload));
         } else if (msg.type === 'action') {
           if (payload?.action === 'raise_hand') {
             setRemoteHandRaised(true);

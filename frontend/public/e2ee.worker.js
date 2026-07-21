@@ -6,10 +6,9 @@ onrtctransform = async (event) => {
   const transformer = event.transformer;
   const { operation, key } = transformer.options;
 
-  // Derive a CryptoKey from the provided key string (e.g. roomId)
-  // For production, a stronger KDF like PBKDF2 should be used.
+  // Derive a CryptoKey from the provided key string
   const enc = new TextEncoder();
-  const rawKey = enc.encode(key.padEnd(32, '0').slice(0, 32)); // Simple 256-bit key for demo
+  const rawKey = await crypto.subtle.digest('SHA-256', enc.encode(key));
 
   const cryptoKey = await crypto.subtle.importKey(
     'raw',
@@ -19,42 +18,53 @@ onrtctransform = async (event) => {
     ['encrypt', 'decrypt']
   );
 
-  const iv = new Uint8Array(12); // A fixed IV for demo (in production, attach dynamic IV to frame)
+  const iv = new Uint8Array(12); // A fixed IV for demo
 
-  if (operation === 'encode') {
-    transformer.readable.pipeThrough(new TransformStream({
-      async transform(frame, controller) {
-        // Enqueue the frame directly for now if we can't encrypt, but let's encrypt the payload
-        try {
-          const encrypted = await crypto.subtle.encrypt(
+  transformer.readable.pipeThrough(new TransformStream({
+    async transform(frame, controller) {
+      try {
+        const data = new Uint8Array(frame.data);
+        // Leave some bytes unencrypted for WebRTC to route/packetize properly.
+        // For video frames (has type), leave 10 bytes for payload descriptor.
+        // For audio frames (no type), leave 1 byte.
+        const unencryptedBytes = frame.type === undefined ? 1 : 10;
+        
+        if (data.length <= unencryptedBytes) {
+           controller.enqueue(frame);
+           return;
+        }
+
+        const unencrypted = data.slice(0, unencryptedBytes);
+        const payload = data.slice(unencryptedBytes);
+
+        if (operation === 'encode') {
+          const encryptedPayload = await crypto.subtle.encrypt(
             { name: 'AES-GCM', iv },
             cryptoKey,
-            frame.data
+            payload
           );
-          frame.data = encrypted;
-          controller.enqueue(frame);
-        } catch (e) {
-          console.error("Encryption error:", e);
-          controller.enqueue(frame); // fallback
-        }
-      }
-    })).pipeTo(transformer.writable);
-  } else if (operation === 'decode') {
-    transformer.readable.pipeThrough(new TransformStream({
-      async transform(frame, controller) {
-        try {
-          const decrypted = await crypto.subtle.decrypt(
+          
+          const newData = new Uint8Array(unencrypted.length + encryptedPayload.byteLength);
+          newData.set(unencrypted, 0);
+          newData.set(new Uint8Array(encryptedPayload), unencrypted.length);
+          frame.data = newData.buffer;
+        } else if (operation === 'decode') {
+          const decryptedPayload = await crypto.subtle.decrypt(
             { name: 'AES-GCM', iv },
             cryptoKey,
-            frame.data
+            payload
           );
-          frame.data = decrypted;
-          controller.enqueue(frame);
-        } catch (e) {
-          console.error("Decryption error:", e);
-          controller.enqueue(frame); // fallback
+          
+          const newData = new Uint8Array(unencrypted.length + decryptedPayload.byteLength);
+          newData.set(unencrypted, 0);
+          newData.set(new Uint8Array(decryptedPayload), unencrypted.length);
+          frame.data = newData.buffer;
         }
+        controller.enqueue(frame);
+      } catch (e) {
+        console.error("E2EE error:", e);
+        controller.enqueue(frame); // send unencrypted as fallback
       }
-    })).pipeTo(transformer.writable);
-  }
+    }
+  })).pipeTo(transformer.writable);
 };
