@@ -13,21 +13,56 @@ export default function PrivacyPolicy() {
       </header>
 
       <main className="flex-1 flex flex-col px-margin-mobile py-32 max-w-3xl mx-auto space-y-6">
-        <h1 className="text-4xl font-headline-lg-mobile text-primary font-bold">Privacy Policy</h1>
-        <p className="text-on-surface-variant">Last updated: July 2024</p>
+        <h1 className="text-4xl font-headline-lg-mobile text-primary font-bold">Privacy Policy for FaceMe</h1>
+        <p className="text-on-surface-variant font-bold">Last Updated: <span className="font-normal">July 2026</span></p>
         
-        <div className="space-y-4 text-on-background">
-          <h2 className="text-2xl font-bold mt-8">1. Introduction</h2>
-          <p>Welcome to FaceMe. We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website and tell you about your privacy rights.</p>
+        <div className="space-y-6 text-on-background leading-relaxed">
+          <p>
+            This Privacy Policy explains how <strong>FaceMe</strong> (&quot;we,&quot; &quot;our&quot;) handles user information. We believe in absolute privacy by design.
+          </p>
+
+          <hr className="border-t border-slate-200 my-8" />
           
-          <h2 className="text-2xl font-bold mt-8">2. The Data We Collect</h2>
-          <p>We may collect, use, store and transfer different kinds of personal data about you which we have grouped together follows: Identity Data, Contact Data, Technical Data, and Usage Data. FaceMe is designed to be privacy-first, operating predominantly via peer-to-peer connections.</p>
+          <h2 className="text-2xl font-bold mt-8 text-primary">1. Zero-Persistence Core Principle</h2>
+          <p>FaceMe is engineered to operate <strong>without persistent databases or user accounts</strong>.</p>
+          <ul className="list-disc pl-5 space-y-2">
+            <li><strong>No Registration:</strong> You are never required to provide an email address, password, or personal identity.</li>
+            <li><strong>No Video/Audio Storage:</strong> Video and audio data are streamed directly between browser participants over encrypted Peer-to-Peer (WebRTC) connections. Media data <strong>never</strong> touches or passes through our servers.</li>
+            <li><strong>No Message Logs:</strong> In-call text messages and file transfers travel directly between browsers via WebRTC DataChannels and are deleted instantly when you close your browser tab.</li>
+          </ul>
 
-          <h2 className="text-2xl font-bold mt-8">3. How We Use Your Data</h2>
-          <p>We will only use your personal data when the law allows us to. Most commonly, we will use your personal data to provide our video calling services, manage our relationship with you, and improve our platform.</p>
+          <h2 className="text-2xl font-bold mt-8 text-primary">2. Information Handled by the Signaling Server</h2>
+          <p>To connect two users into a room, our Go backend acts as a temporary &quot;matchmaker&quot; (signaling server). The server processes the following ephemeral, in-memory data:</p>
+          <ul className="list-disc pl-5 space-y-2">
+            <li><strong>Temporary Room Codes:</strong> Ephemeral strings generated when a room is created.</li>
+            <li><strong>Display Handles:</strong> Temporary user handles typed into the room lobby.</li>
+            <li><strong>WebRTC Descriptors (SDP &amp; ICE Candidates):</strong> Technical network routing metadata required to establish the P2P connection.</li>
+          </ul>
+          <p className="italic">*All room metadata and signaling memory are automatically purged and erased from server RAM the moment a room becomes empty.*</p>
 
-          <h2 className="text-2xl font-bold mt-8">4. Data Security</h2>
-          <p>We have put in place appropriate security measures to prevent your personal data from being accidentally lost, used or accessed in an unauthorised way, altered or disclosed. Video and audio streams are end-to-end encrypted.</p>
+          <h2 className="text-2xl font-bold mt-8 text-primary">3. Server Logs &amp; Analytics</h2>
+          <p>Our infrastructure utilizes standard edge security proxies (Cloudflare Tunnels) to protect against DDoS attacks. Standard server access logs (such as IP addresses, user-agent strings, and request timestamps) may be generated at the edge for network security and Prometheus telemetry. These logs are used purely for service health monitoring and are never sold or used for tracking.</p>
+
+          <h2 className="text-2xl font-bold mt-8 text-primary">4. Cookies &amp; Local Storage</h2>
+          <ul className="list-disc pl-5 space-y-2">
+            <li><strong>Cookies:</strong> FaceMe does <strong>not</strong> use tracking cookies or advertising cookies.</li>
+            <li><strong>Local Storage:</strong> The application may store transient UI preferences (such as your preferred camera/mic state) locally in your browser&apos;s <code>localStorage</code>.</li>
+          </ul>
+
+          <h2 className="text-2xl font-bold mt-8 text-primary">5. Third-Party Services</h2>
+          <p>To facilitate network path discovery behind routers and firewalls, FaceMe uses public <strong>STUN servers</strong> (such as Google&apos;s public STUN infrastructure). STUN requests exchange basic IP metadata strictly to assist your browser in discovering its public network address.</p>
+
+          <h2 className="text-2xl font-bold mt-8 text-primary">6. Children&apos;s Privacy</h2>
+          <p>FaceMe does not knowingly collect or solicit personal information from anyone under the age of 13.</p>
+
+          <h2 className="text-2xl font-bold mt-8 text-primary">7. Changes to This Policy</h2>
+          <p>We may update this Privacy Policy periodically. Any updates will be reflected on this page.</p>
+
+          <hr className="border-t border-slate-200 my-8" />
+          
+          <p>
+            <strong>Questions?</strong> Because we do not store your data, we have no personal data to retrieve, export, or delete!
+          </p>
         </div>
       </main>
     </div>

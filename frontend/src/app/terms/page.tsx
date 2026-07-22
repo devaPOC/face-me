@@ -13,21 +13,58 @@ export default function TermsOfService() {
       </header>
 
       <main className="flex-1 flex flex-col px-margin-mobile py-32 max-w-3xl mx-auto space-y-6">
-        <h1 className="text-4xl font-headline-lg-mobile text-primary font-bold">Terms and Conditions</h1>
-        <p className="text-on-surface-variant">Last updated: July 2024</p>
-        
-        <div className="space-y-4 text-on-background">
-          <h2 className="text-2xl font-bold mt-8">1. Acceptance of Terms</h2>
-          <p>By accessing and using FaceMe, you accept and agree to be bound by the terms and provision of this agreement. In addition, when using this service, you shall be subject to any posted guidelines or rules applicable to such services.</p>
-          
-          <h2 className="text-2xl font-bold mt-8">2. Description of Service</h2>
-          <p>FaceMe provides users with access to a rich collection of resources, including video communication tools. You understand and agree that the service is provided "AS-IS" and that FaceMe assumes no responsibility for the timeliness, deletion, mis-delivery or failure to store any user communications.</p>
+        <h1 className="text-4xl font-headline-lg-mobile text-primary font-bold">Terms & Conditions for FaceMe</h1>
+        <p className="text-on-surface-variant font-bold">Last Updated: <span className="font-normal">July 2026</span></p>
 
-          <h2 className="text-2xl font-bold mt-8">3. User Conduct</h2>
-          <p>You agree to not use the service to: (a) upload, post, email, transmit or otherwise make available any content that is unlawful, harmful, threatening, abusive, harassing, tortious, defamatory, vulgar, obscene, libellous, invasive of another's privacy, hateful, or racially, ethnically or otherwise objectionable.</p>
+        <div className="space-y-6 text-on-background leading-relaxed">
+          <p>
+            Welcome to <strong>FaceMe</strong> (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;). FaceMe is an open-source, free, peer-to-peer (P2P) real-time video calling application hosted at <code>faceme.switchspace.in</code>.
+          </p>
+          <p>
+            By accessing or using FaceMe, you agree to be bound by these Terms & Conditions. If you do not agree to these terms, please do not use the application.
+          </p>
 
-          <h2 className="text-2xl font-bold mt-8">4. Modifications to Service</h2>
-          <p>FaceMe reserves the right at any time and from time to time to modify or discontinue, temporarily or permanently, the Service (or any part thereof) with or without notice.</p>
+          <hr className="border-t border-slate-200 my-8" />
+
+          <h2 className="text-2xl font-bold mt-8 text-primary">1. Description of Service</h2>
+          <p>FaceMe provides an ephemeral, browser-based, 1-to-1 video communication platform. The application uses a Go-based signaling server solely to establish connections between browser peers. Once established, media streams and chat messages flow directly between participants via WebRTC.</p>
+
+          <h2 className="text-2xl font-bold mt-8 text-primary">2. Free &amp; Open-Source Nature</h2>
+          <p>FaceMe is provided free of charge for personal and demonstration purposes. The underlying source code is open-source and licensed under the <strong>MIT License</strong>. While you may inspect, fork, or modify the code according to its license, your use of the hosted application service at <code>faceme.switchspace.in</code> is subject to these Terms.</p>
+
+          <h2 className="text-2xl font-bold mt-8 text-primary">3. User Conduct &amp; Acceptable Use</h2>
+          <p>You agree to use FaceMe only for lawful purposes. You are strictly prohibited from:</p>
+          <ul className="list-disc pl-5 space-y-2">
+            <li>Using the service to transmit unlawful, threatening, abusive, harassing, or objectionable material.</li>
+            <li>Attempting to exploit, overload, or bypass the signaling backend or Cloudflare Tunnel infrastructure.</li>
+            <li>Attempting to join calls or intercept streams without the host&apos;s permission.</li>
+            <li>Using automated bots or scripts to create or flood rooms.</li>
+          </ul>
+          <p>We reserve the right to terminate or block WebSocket signaling connections for any user violating these rules without prior notice.</p>
+
+          <h2 className="text-2xl font-bold mt-8 text-primary">4. No Storage or Media Recording</h2>
+          <p>FaceMe does <strong>not</strong> record, store, or monitor video, audio, or text messages on its servers. However, we cannot control whether the person on the other end of your call uses external screen recording software or local tools. You use the application at your own risk regarding the actions of your call counterparty.</p>
+
+          <h2 className="text-2xl font-bold mt-8 text-primary">5. Disclaimer of Warranties</h2>
+          <p className="uppercase">THE SERVICE IS PROVIDED ON AN <strong>&quot;AS IS&quot;</strong> AND <strong>&quot;AS AVAILABLE&quot;</strong> BASIS WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.</p>
+          <p>We do not guarantee that:</p>
+          <ul className="list-disc pl-5 space-y-2">
+            <li>The service will be uninterrupted, bug-free, or continuously available.</li>
+            <li>Network hole-punching (STUN/TURN) will succeed across all network firewalls or cellular providers.</li>
+            <li>Ephemeral signaling server connections will be error-free.</li>
+          </ul>
+
+          <h2 className="text-2xl font-bold mt-8 text-primary">6. Limitation of Liability</h2>
+          <p className="uppercase">TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL THE DEVELOPERS, HOSTS, OR COPYRIGHT HOLDERS OF FACEME BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF DATA, USE, OR GOODWILL, ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF THE SERVICE.</p>
+
+          <h2 className="text-2xl font-bold mt-8 text-primary">7. Changes to Terms</h2>
+          <p>We reserve the right to modify these Terms at any time. Updated versions will be posted directly on this page with a revised &quot;Last Updated&quot; date.</p>
+
+          <hr className="border-t border-slate-200 my-8" />
+
+          <p>
+            <strong>Contact:</strong> For open-source contributions or legal inquiries, please visit our public GitHub repository.
+          </p>
         </div>
       </main>
     </div>
