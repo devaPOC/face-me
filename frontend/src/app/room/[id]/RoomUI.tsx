@@ -129,6 +129,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
   };
 
   const handleConfirmLeave = () => {
+    sessionStorage.setItem('showSupportModal', 'true');
     router.push('/');
   };
 
@@ -177,7 +178,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
   if (['REJECTED', 'FULL', 'ENDED', 'KNOCKING'].includes(status)) {
     return (
       <>
-        <StatusScreens status={status} handleLeave={handleLeaveClick} />
+        <StatusScreens status={status} handleLeave={handleConfirmLeave} />
         <PostCallModal 
           isOpen={showLeaveModal} 
           onClose={() => setShowLeaveModal(false)} 

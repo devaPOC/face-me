@@ -1,13 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import BuyMeACoffee from '@/components/BuyMeACoffee';
+import SupportModal from '@/components/SupportModal';
 
 export default function Home() {
   const [roomId, setRoomId] = useState('');
   const [topic, setTopic] = useState('');
+  const [showSupportModal, setShowSupportModal] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (sessionStorage.getItem('showSupportModal') === 'true') {
+      setShowSupportModal(true);
+      sessionStorage.removeItem('showSupportModal');
+    }
+  }, []);
 
   const handleCreateRoom = async () => {
     const newRoomId = Math.random().toString(36).substring(2, 8);
@@ -161,6 +170,10 @@ export default function Home() {
 
         </div>
       </footer>
+      <SupportModal 
+        isOpen={showSupportModal} 
+        onClose={() => setShowSupportModal(false)} 
+      />
     </div>
   );
 }
