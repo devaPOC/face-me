@@ -10,6 +10,7 @@ import RoomHeader from '@/components/room/RoomHeader';
 import VideoArea from '@/components/room/VideoArea';
 import SideDrawer from '@/components/room/SideDrawer';
 import ControlBar from '@/components/room/ControlBar';
+import PostCallModal from '@/components/room/PostCallModal';
 
 export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: string, initialTopic: string, isCreator: boolean }) {
   const router = useRouter();
@@ -121,7 +122,13 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
     }
   };
 
-  const handleLeave = () => {
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
+
+  const handleLeaveClick = () => {
+    setShowLeaveModal(true);
+  };
+
+  const handleConfirmLeave = () => {
     router.push('/');
   };
 
@@ -168,7 +175,16 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
   }
 
   if (['REJECTED', 'FULL', 'ENDED', 'KNOCKING'].includes(status)) {
-    return <StatusScreens status={status} handleLeave={handleLeave} />;
+    return (
+      <>
+        <StatusScreens status={status} handleLeave={handleLeaveClick} />
+        <PostCallModal 
+          isOpen={showLeaveModal} 
+          onClose={() => setShowLeaveModal(false)} 
+          onConfirmLeave={handleConfirmLeave} 
+        />
+      </>
+    );
   }
 
   const title = initialTopic ? `Meet: ${initialTopic}` : `Room: ${roomId}`;
@@ -233,7 +249,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
         toggleVideo={toggleVideo}
         toggleScreenShare={toggleScreenShare}
         raiseHand={raiseHand}
-        handleLeave={handleLeave}
+        handleLeave={handleLeaveClick}
         showStats={showStats}
         setShowStats={setShowStats}
         flipCamera={flipCamera}
@@ -242,6 +258,12 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
         selectedAudioId={selectedAudioId}
         selectedVideoId={selectedVideoId}
         switchDevice={switchDevice}
+      />
+      
+      <PostCallModal 
+        isOpen={showLeaveModal} 
+        onClose={() => setShowLeaveModal(false)} 
+        onConfirmLeave={handleConfirmLeave} 
       />
     </div>
   );
