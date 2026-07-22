@@ -69,7 +69,7 @@ export default function Home() {
                   placeholder="e.g. Weekly Sync or Coffee Chat"
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
-                  className="w-full bg-surface-container-low border-outline-variant border-[1px] rounded-DEFAULT px-4 py-4 font-body-md focus:outline-none focus:ring-2 focus:ring-secondary-container focus:border-secondary transition-all placeholder:text-outline"
+                  className="w-full bg-surface-container-low border-outline-variant border-[1px] rounded-DEFAULT pr-4 pl-12 py-4 font-body-md focus:outline-none focus:ring-2 focus:ring-secondary-container focus:border-secondary transition-all placeholder:text-outline"
                 />
               </div>
               <button
@@ -98,7 +98,7 @@ export default function Home() {
                   placeholder="Enter Room Code"
                   value={roomId}
                   onChange={(e) => setRoomId(e.target.value)}
-                  className="w-full bg-surface-container-low border-outline-variant border-[1px] rounded-DEFAULT px-4 py-4 font-body-md focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary transition-all placeholder:text-outline"
+                  className="w-full bg-surface-container-low border-outline-variant border-[1px] rounded-DEFAULT pr-4 pl-12 py-4 font-body-md focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary transition-all placeholder:text-outline"
                 />
               </div>
               <button
