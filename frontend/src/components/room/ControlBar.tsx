@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,11 +9,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
-import {
-  Mic, MicOff, Video, VideoOff,
-  MoreVertical, PhoneOff, Hand, SwitchCamera,
-  ChevronUp, Users, MonitorUp, Activity, MessageSquare
-} from 'lucide-react';
+import { Activity, SwitchCamera } from 'lucide-react';
 
 interface ControlBarProps {
   status: string;
@@ -68,21 +63,25 @@ export default function ControlBar({
   switchDevice
 }: ControlBarProps) {
   return (
-    <footer className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-card/90 backdrop-blur-xl px-3 py-2 rounded-full z-40 shadow-2xl border border-border">
-      {/* Mic split button */}
-      <div className="flex rounded-full overflow-hidden">
+    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 w-full max-w-fit px-margin-mobile">
+      <div className="glass p-3 md:p-4 rounded-xl flex items-center gap-2 md:gap-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+
+        {/* Mic Toggle with Device Selector inside DropdownMenu */}
         <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button
-                variant={isMuted ? 'destructive' : 'ghost'}
-                size="icon-sm"
-                className="rounded-none rounded-l-full cursor-pointer"
-              />
-            }
-          >
-            <ChevronUp className="w-3.5 h-3.5" />
-          </DropdownMenuTrigger>
+          <div className="flex bg-white/10 rounded-full hover:bg-white/20 transition-all">
+            <DropdownMenuTrigger render={
+              <button className="control-btn px-2 h-12 md:h-14 flex items-center justify-center text-white/70 hover:text-white border-r border-white/10 cursor-pointer">
+                <span className="material-symbols-outlined text-[16px]">expand_less</span>
+              </button>
+            } />
+            <button
+              onClick={toggleMute}
+              className={`control-btn w-10 h-12 md:w-12 md:h-14 flex items-center justify-center cursor-pointer ${isMuted ? 'text-red-400' : 'text-white'}`}>
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+                {isMuted ? 'mic_off' : 'mic'}
+              </span>
+            </button>
+          </div>
           <DropdownMenuContent side="top" align="start" className="min-w-[220px]">
             <DropdownMenuGroup>
               <DropdownMenuLabel>Microphone</DropdownMenuLabel>
@@ -101,31 +100,22 @@ export default function ControlBar({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button
-          variant={isMuted ? 'destructive' : 'ghost'}
-          size="icon"
-          onClick={toggleMute}
-          className="rounded-none rounded-r-full cursor-pointer"
-          title={isMuted ? 'Unmute' : 'Mute'}
-        >
-          {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-        </Button>
-      </div>
-
-      {/* Video split button */}
-      <div className="flex rounded-full overflow-hidden">
+        {/* Camera Toggle with Device Selector inside DropdownMenu */}
         <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button
-                variant={isVideoOff ? 'destructive' : 'ghost'}
-                size="icon-sm"
-                className="rounded-none rounded-l-full cursor-pointer"
-              />
-            }
-          >
-            <ChevronUp className="w-3.5 h-3.5" />
-          </DropdownMenuTrigger>
+          <div className="flex bg-white/10 rounded-full hover:bg-white/20 transition-all">
+            <DropdownMenuTrigger render={
+              <button className="control-btn px-2 h-12 md:h-14 flex items-center justify-center text-white/70 hover:text-white border-r border-white/10 cursor-pointer">
+                <span className="material-symbols-outlined text-[16px]">expand_less</span>
+              </button>
+            } />
+            <button
+              onClick={toggleVideo}
+              className={`control-btn w-10 h-12 md:w-12 md:h-14 flex items-center justify-center cursor-pointer ${isVideoOff ? 'text-red-400' : 'text-white'}`}>
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+                {isVideoOff ? 'videocam_off' : 'videocam'}
+              </span>
+            </button>
+          </div>
           <DropdownMenuContent side="top" align="start" className="min-w-[220px]">
             <DropdownMenuGroup>
               <DropdownMenuLabel>Camera</DropdownMenuLabel>
@@ -140,111 +130,81 @@ export default function ControlBar({
                   </DropdownMenuRadioItem>
                 ))}
               </DropdownMenuRadioGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={flipCamera} className="cursor-pointer">
+                <SwitchCamera className="w-4 h-4 mr-2" /> Flip Camera
+              </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button
-          variant={isVideoOff ? 'destructive' : 'ghost'}
-          size="icon"
-          onClick={toggleVideo}
-          className="rounded-none rounded-r-full cursor-pointer"
-          title={isVideoOff ? 'Turn Video On' : 'Turn Video Off'}
-        >
-          {isVideoOff ? <VideoOff className="w-4 h-4" /> : <Video className="w-4 h-4" />}
-        </Button>
-      </div>
+        {/* Screen Share */}
+        <button
+          onClick={toggleScreenShare}
+          className={`control-btn w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center cursor-pointer ${isScreenSharing ? 'bg-secondary text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}>
+          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>present_to_all</span>
+        </button>
 
-      {/* Screen Share button */}
-      <Button
-        variant={isScreenSharing ? 'secondary' : 'ghost'}
-        size="icon"
-        onClick={toggleScreenShare}
-        className="rounded-full cursor-pointer text-white"
-        title={isScreenSharing ? 'Stop sharing screen' : 'Share screen'}
-      >
-        <MonitorUp className="w-4 h-4" />
-      </Button>
+        <div className="w-px h-8 bg-white/10 mx-1"></div>
 
-      {/* Waiting Room button */}
-      {inCallCount < 2 && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            if (modalOpen && activeTab === 'people') setModalOpen(false);
-            else { setModalOpen(true); setActiveTab('people'); }
-          }}
-          className="rounded-full cursor-pointer relative"
-          title="Waiting Room"
-        >
-          <Users className="w-4 h-4" />
-          {(waitingCount > 0) && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-black text-[10px] font-bold rounded-full flex items-center justify-center">
-              {waitingCount}
-            </span>
-          )}
-        </Button>
-      )}
+        {/* Raise Hand */}
+        {status === 'IN_CALL' && (
+          <button
+            onClick={raiseHand}
+            className="control-btn w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center bg-white/10 text-white hover:bg-white/20 cursor-pointer">
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>front_hand</span>
+          </button>
+        )}
 
-      {status === 'IN_CALL' && (
-        <>
-          {/* Chat button */}
-          <Button
-            variant="ghost"
-            size="icon"
+        {/* Participants (Waiting Room) */}
+        {inCallCount < 2 && (
+          <button
+            onClick={() => {
+              if (modalOpen && activeTab === 'people') setModalOpen(false);
+              else { setModalOpen(true); setActiveTab('people'); }
+            }}
+            className="control-btn w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center bg-white/10 text-white hover:bg-white/20 relative cursor-pointer">
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>group</span>
+            {(waitingCount > 0) && (
+              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-[#0F172A]"></span>
+            )}
+          </button>
+        )}
+
+        {/* Chat Drawer Toggle */}
+        {status === 'IN_CALL' && (
+          <button
             onClick={() => {
               if (modalOpen && activeTab === 'chat') setModalOpen(false);
               else { setModalOpen(true); setActiveTab('chat'); }
             }}
-            className="rounded-full cursor-pointer"
-            title="Chat"
-          >
-            <MessageSquare className="w-4 h-4" />
-          </Button>
+            className="control-btn w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center bg-white/10 text-white hover:bg-white/20 relative cursor-pointer">
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>chat</span>
+          </button>
+        )}
 
-          {/* Raise Hand button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={raiseHand}
-            className="rounded-full cursor-pointer"
-            title="Raise Hand"
-          >
-            <Hand className="w-4 h-4" />
-          </Button>
-        </>
-      )}
+        <DropdownMenu>
+          <DropdownMenuTrigger render={
+            <button className="control-btn w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center bg-white/10 text-white hover:bg-white/20 cursor-pointer">
+              <span className="material-symbols-outlined">more_horiz</span>
+            </button>
+          } />
+          <DropdownMenuContent side="top" align="center">
+            <DropdownMenuItem onClick={() => setShowStats(!showStats)} className="cursor-pointer">
+              <Activity className="w-4 h-4 mr-2" /> Stats for Nerds
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-      {/* More options */}
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button variant="ghost" size="icon" className="rounded-full cursor-pointer" />
-          }
-        >
-          <MoreVertical className="w-4 h-4" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent side="top" align="center">
-          <DropdownMenuItem onClick={() => setShowStats(!showStats)} className="cursor-pointer">
-            <Activity className="w-4 h-4 mr-2" /> Stats for Nerds
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={flipCamera} className="cursor-pointer">
-            <SwitchCamera className="w-4 h-4 mr-2" /> Flip Camera
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        {/* End Call */}
+        <button
+          onClick={handleLeave}
+          className="control-btn px-6 md:px-8 h-12 md:h-14 rounded-full flex items-center justify-center bg-[#EF4444] text-white hover:bg-[#DC2626] shadow-lg shadow-red-900/20 ml-2 cursor-pointer">
+          <span className="material-symbols-outlined mr-2" style={{ fontVariationSettings: "'FILL' 1" }}>call_end</span>
+          <span className="font-label-md text-label-md font-bold uppercase tracking-widest hidden md:inline">End</span>
+        </button>
 
-      {/* End call */}
-      <Button
-        variant="destructive"
-        size="lg"
-        onClick={handleLeave}
-        className="rounded-full px-6 ml-1 cursor-pointer"
-        title="Leave Call"
-      >
-        <PhoneOff className="w-4 h-4" />
-      </Button>
-    </footer>
+      </div>
+    </div>
   );
 }

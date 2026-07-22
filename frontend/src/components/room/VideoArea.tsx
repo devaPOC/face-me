@@ -26,51 +26,64 @@ export default function VideoArea({
   remoteVideoRef
 }: VideoAreaProps) {
   return (
-    <main className="flex-1 relative w-full h-full">
+    <div className="absolute inset-0 z-0">
       <StatsOverlay telemetry={showStats ? telemetry : null} onClose={() => setShowStats(false)} />
 
-      {/* Remote video — full screen when in call */}
-      {status === 'IN_CALL' && (
-        <>
+      {/* Primary Stage: Remote Video */}
+      {status === 'IN_CALL' ? (
+        <div className="absolute inset-0 z-0 bg-slate-900">
           <video
             ref={remoteVideoRef}
             autoPlay
             playsInline
             className="w-full h-full object-cover"
           />
-          <span className="absolute bottom-28 left-5 bg-black/60 px-3 py-1 rounded text-sm z-20">
-            {remoteName}
-          </span>
-        </>
-      )}
-
-      {/* Local video — PiP when in call, full screen otherwise */}
-      <div className={
-        status === 'IN_CALL'
-          ? 'absolute bottom-28 right-5 w-[140px] h-[200px] z-30 rounded-xl overflow-hidden border border-white/20 shadow-2xl'
-          : 'w-full h-full'
-      }>
-        <video
-          ref={localVideoRef}
-          autoPlay
-          playsInline
-          muted
-          className="w-full h-full object-cover -scale-x-100"
-        />
-        <span className="absolute bottom-2 left-2 bg-black/60 px-2 py-0.5 rounded text-xs">
-          {localName} (You) {isScreenSharing ? '- Sharing Screen' : ''}
-        </span>
-      </div>
-
-      {/* Waiting overlay */}
-      {status === 'WAITING_FOR_GUEST' && (
-        <div className="absolute inset-0 flex items-center justify-center z-40">
-          <div className="bg-black/60 backdrop-blur-md px-6 py-3 rounded-full text-sm flex items-center gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Waiting for others to join…
+          <div className="absolute inset-0 video-stage-overlay pointer-events-none"></div>
+          <div className="absolute bottom-32 left-8 z-20">
+            <div className="px-3 py-1 glass rounded-md text-white font-label-sm shadow-md">
+              {remoteName}
+            </div>
           </div>
         </div>
+      ) : (
+        <div className="absolute inset-0 z-0 bg-slate-900 flex items-center justify-center">
+           {status === 'WAITING_FOR_GUEST' && (
+             <div className="glass px-6 py-3 rounded-full text-white text-sm flex items-center gap-3">
+               <Loader2 className="w-5 h-5 animate-spin" />
+               <span className="font-label-md">Waiting for others to join…</span>
+             </div>
+           )}
+           <div className="absolute inset-0 video-stage-overlay pointer-events-none"></div>
+        </div>
       )}
-    </main>
+
+      {/* PIP: Local Video */}
+      <div className={
+        status === 'IN_CALL'
+          ? 'absolute bottom-32 right-8 z-20 group'
+          : 'absolute inset-0 z-10 flex items-center justify-center pointer-events-none'
+      }>
+        <div className={
+          status === 'IN_CALL'
+            ? 'w-48 md:w-64 aspect-video rounded-lg overflow-hidden border-2 border-white/90 shadow-2xl transition-transform duration-500 hover:scale-[1.02]'
+            : 'w-full h-full'
+        }>
+          <video
+            ref={localVideoRef}
+            autoPlay
+            playsInline
+            muted
+            className={`w-full h-full object-cover -scale-x-100 ${status !== 'IN_CALL' ? 'opacity-30' : ''}`}
+          />
+          {status === 'IN_CALL' && (
+            <div className="absolute bottom-2 left-2 px-2 py-0.5 glass rounded-md">
+              <span className="text-white font-label-sm text-label-sm">
+                {localName || 'You'} {isScreenSharing ? '(Sharing Screen)' : ''}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

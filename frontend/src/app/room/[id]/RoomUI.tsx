@@ -8,7 +8,7 @@ import JoinScreen from '@/components/room/JoinScreen';
 import StatusScreens from '@/components/room/StatusScreens';
 import RoomHeader from '@/components/room/RoomHeader';
 import VideoArea from '@/components/room/VideoArea';
-import RoomModal from '@/components/room/RoomModal';
+import SideDrawer from '@/components/room/SideDrawer';
 import ControlBar from '@/components/room/ControlBar';
 
 export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: string, initialTopic: string, isCreator: boolean }) {
@@ -54,6 +54,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
     isScreenSharing,
     chatMessages,
     telemetry,
+    initLocalMedia,
     switchDevice,
     flipCamera,
     connect,
@@ -93,6 +94,12 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
       remoteVideoRef.current.srcObject = remoteStream;
     }
   }, [remoteStream, status]);
+
+  useEffect(() => {
+    if (status === 'IDLE') {
+      initLocalMedia();
+    }
+  }, [status, initLocalMedia]);
 
   // Auto-open the modal when someone knocks
   useEffect(() => {
@@ -145,6 +152,16 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
         setInputName={setInputName}
         handleJoin={handleJoin}
         isActuallyCreator={isActuallyCreator}
+        localStream={localStream}
+        isVideoOff={isVideoOff}
+        isMuted={isMuted}
+        audioDevices={audioDevices}
+        videoDevices={videoDevices}
+        selectedAudioId={selectedAudioId}
+        selectedVideoId={selectedVideoId}
+        switchDevice={switchDevice}
+        toggleVideo={toggleVideo}
+        toggleMute={toggleMute}
       />
     );
   }
@@ -178,7 +195,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
         remoteVideoRef={remoteVideoRef}
       />
 
-      <RoomModal 
+      <SideDrawer 
         modalOpen={modalOpen}
         setModalOpen={setModalOpen}
         activeTab={activeTab}

@@ -142,6 +142,25 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     }
   };
 
+  const initLocalMedia = useCallback(async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert("Camera access blocked! You must use HTTPS or localhost to access the camera (Secure Context). Please use a tunneling service like localtunnel.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      setLocalStream(stream);
+      await loadDevices();
+
+      const audioTrack = stream.getAudioTracks()[0];
+      const videoTrack = stream.getVideoTracks()[0];
+      if (audioTrack) setSelectedAudioId(audioTrack.getSettings().deviceId || '');
+      if (videoTrack) setSelectedVideoId(videoTrack.getSettings().deviceId || '');
+    } catch (err) {
+      console.error('Error accessing media devices:', err);
+    }
+  }, []);
+
   const setupDataChannel = (dc: RTCDataChannel) => {
     dc.onopen = () => console.log('Data channel opened');
     dc.onmessage = (event) => {
@@ -178,19 +197,21 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
       return;
     }
 
-    let stream: MediaStream | null = null;
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      setLocalStream(stream);
-      await loadDevices();
+    let stream = localStream;
+    if (!stream) {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        setLocalStream(stream);
+        await loadDevices();
 
-      const audioTrack = stream.getAudioTracks()[0];
-      const videoTrack = stream.getVideoTracks()[0];
-      if (audioTrack) setSelectedAudioId(audioTrack.getSettings().deviceId || '');
-      if (videoTrack) setSelectedVideoId(videoTrack.getSettings().deviceId || '');
-    } catch (err) {
-      console.error('Error accessing media devices:', err);
-      return;
+        const audioTrack = stream.getAudioTracks()[0];
+        const videoTrack = stream.getVideoTracks()[0];
+        if (audioTrack) setSelectedAudioId(audioTrack.getSettings().deviceId || '');
+        if (videoTrack) setSelectedVideoId(videoTrack.getSettings().deviceId || '');
+      } catch (err) {
+        console.error('Error accessing media devices:', err);
+        return;
+      }
     }
 
     const pc = new RTCPeerConnection({
@@ -499,6 +520,7 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     isScreenSharing,
     chatMessages,
     telemetry,
+    initLocalMedia,
     switchDevice,
     flipCamera,
     connect,
