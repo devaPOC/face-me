@@ -121,9 +121,9 @@ export default function Home() {
       {/* Footer */}
       <footer className="w-full py-8 px-margin-mobile text-center">
         <p className="font-label-sm text-outline">
-          © 2024 FaceMe Communication Labs.
-          <a className="underline hover:text-primary transition-colors ml-1" href="#">Privacy</a> ·
-          <a className="underline hover:text-primary transition-colors ml-1" href="#">Terms</a>
+          Made by Mahadeva Sankaram.
+          <a className="underline hover:text-primary transition-colors ml-1" href="/privacy">Privacy</a> ·
+          <a className="underline hover:text-primary transition-colors ml-1" href="/terms">Terms</a>
         </p>
       </footer>
     </div>
