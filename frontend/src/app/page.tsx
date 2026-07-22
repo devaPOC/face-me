@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 
 export default function Home() {
   const [roomId, setRoomId] = useState('');
@@ -37,13 +36,10 @@ export default function Home() {
   return (
     <div className="bg-mesh min-h-screen flex flex-col font-body-md text-on-background selection:bg-secondary-container selection:text-on-secondary-container">
       {/* TopAppBar */}
-      <header className="w-full top-0 sticky bg-surface dark:bg-background z-40 flex justify-between items-center px-margin-mobile py-2">
-        <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary dark:text-primary-fixed" style={{ fontSize: '28px' }}>videocam</span>
-          <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary dark:text-primary-fixed tracking-tight">FaceMe</h1>
-        </div>
-        <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden">
-          <Image className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWr4Vsfpin_4FBbTLvK7aVcye9y7Okonr-tOXGWrOUSR0WAJQ9nctzsS1MRINDSxF4zczcpXADSjb4tNMKPLjS1766Ya4WdmciwJlTnUfoMguTaUDF3XkCOvDBZh44y5th63zAJK9Ua-LRdcIoKIC0jnFTlJDv4pgcBwJvds-gRzblxzjYYK5no93ukbAvFdgVL8njNjmY7EtUlWe9MyuW37M3KVPa6vtXj45v2oJ-cY36YUoNReV42xQLkaUvP7g1WjsFKZDl8Q" alt="User avatar" />
+      <header className="fixed top-0 left-0 w-full flex justify-between items-center px-margin-mobile md:px-margin-desktop py-5 bg-white/70 backdrop-blur-md z-50 border-b border-slate-100">
+        <div className="font-headline-lg text-headline-lg font-extrabold text-primary flex items-center gap-2">
+          <span className="material-symbols-outlined text-secondary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>videocam</span>
+          <span className="tracking-tight">FaceMe</span>
         </div>
       </header>
 

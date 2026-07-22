@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 interface SideDrawerProps {
   modalOpen: boolean;
   setModalOpen: (open: boolean) => void;
@@ -40,6 +40,14 @@ export default function SideDrawer({
   admitGuest,
   rejectGuest
 }: SideDrawerProps) {
+  const [showToast, setShowToast] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
   return (
     <div
       className={`fixed top-0 h-full w-80 lg:w-96 z-[60] flex flex-col py-6 bg-surface-container-lowest/95 dark:bg-primary/90 backdrop-blur-md shadow-2xl transition-all duration-500 ease-out border-l border-white/10 ${modalOpen ? 'right-0' : '-right-[400px]'}`}
@@ -47,38 +55,27 @@ export default function SideDrawer({
     >
       <div className="px-6 pb-4 flex items-center justify-between shrink-0">
         <div>
-          <h3 className="font-headline-lg text-[24px] text-primary dark:text-primary-fixed-dim">Call Details</h3>
+          <h3 className="font-headline-lg text-[24px] text-primary dark:text-primary-fixed-dim">
+            {activeTab === 'chat' ? 'In-call Messages' : 'People'}
+          </h3>
         </div>
         <button className="p-2 hover:bg-surface-container rounded-full cursor-pointer" onClick={() => setModalOpen(false)}>
           <span className="material-symbols-outlined text-primary dark:text-primary-fixed-dim">close</span>
         </button>
       </div>
 
-      <nav className="shrink-0 px-4 space-y-2 mb-4">
-        <div
-          onClick={() => setActiveTab('chat')}
-          className={`flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${activeTab === 'chat' ? 'text-secondary dark:text-secondary-fixed font-semibold border-r-4 border-secondary bg-surface-container dark:bg-primary-container/20 rounded-r-none rounded-l-xl' : 'text-on-surface-variant dark:text-on-primary-container hover:bg-surface-container dark:hover:bg-primary-container/20'}`}
-        >
-          <span className="material-symbols-outlined">chat</span>
-          <span className="font-body-md text-body-md">Messages</span>
-        </div>
-        <div
-          onClick={() => setActiveTab('people')}
-          className={`flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${activeTab === 'people' ? 'text-secondary dark:text-secondary-fixed font-semibold border-r-4 border-secondary bg-surface-container dark:bg-primary-container/20 rounded-r-none rounded-l-xl' : 'text-on-surface-variant dark:text-on-primary-container hover:bg-surface-container dark:hover:bg-primary-container/20'}`}
-        >
-          <span className="material-symbols-outlined">groups</span>
-          <span className="font-body-md text-body-md flex-1">People</span>
-          {waitingCount > 0 && (
-            <span className="w-5 h-5 bg-amber-500 text-black text-[10px] font-bold rounded-full flex items-center justify-center">
-              {waitingCount}
-            </span>
-          )}
-        </div>
-      </nav>
-
       <div className="flex-1 overflow-y-auto px-4 flex flex-col gap-4 pb-4">
         {activeTab === 'people' ? (
           <div className="flex flex-col gap-6">
+            
+            <button
+              onClick={handleCopy}
+              className="flex items-center justify-center gap-2 w-full py-3 bg-secondary/10 text-secondary hover:bg-secondary/20 transition-colors rounded-xl font-medium border border-secondary/20"
+            >
+              <span className="material-symbols-outlined text-[20px]">{showToast ? 'check' : 'content_copy'}</span>
+              {showToast ? 'Copied!' : 'Copy Invite Link'}
+            </button>
+
             <div className="space-y-3">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-2">In Call ({inCallCount})</h4>
               {localName && (
@@ -180,6 +177,14 @@ export default function SideDrawer({
           </div>
         )}
       </div>
+
+      {/* Toast Message */}
+      {showToast && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-full shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-300 z-50 whitespace-nowrap">
+          <span className="material-symbols-outlined text-[18px] text-green-400">check_circle</span>
+          <span className="text-sm font-medium">Invite link copied!</span>
+        </div>
+      )}
     </div>
   );
 }

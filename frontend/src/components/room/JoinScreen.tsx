@@ -50,12 +50,106 @@ export default function JoinScreen({
 }: JoinScreenProps) {
   const displayTitle = initialTopic ? `Ready to connect to "${initialTopic}"?` : 'Ready to connect?';
   const videoRef = useRef<HTMLVideoElement>(null);
+  const bar1Ref = useRef<HTMLDivElement>(null);
+  const bar2Ref = useRef<HTMLDivElement>(null);
+  const bar3Ref = useRef<HTMLDivElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const dataArrayRef = useRef<Uint8Array | null>(null);
+  const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const reqRef = useRef<number>(0);
 
   useEffect(() => {
     if (videoRef.current && localStream) {
       videoRef.current.srcObject = localStream;
     }
   }, [localStream, isVideoOff]);
+
+  useEffect(() => {
+    if (!localStream || isMuted) {
+      if (reqRef.current) cancelAnimationFrame(reqRef.current);
+      return;
+    }
+
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    const audioCtx = new AudioContextClass();
+    audioContextRef.current = audioCtx;
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(console.error);
+    }
+
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 64;
+    analyser.smoothingTimeConstant = 0.5;
+    analyserRef.current = analyser;
+
+    const source = audioCtx.createMediaStreamSource(localStream);
+    sourceRef.current = source;
+    source.connect(analyser);
+
+    // CRITICAL: Connect to a muted gain node and then to destination.
+    // If the analyser is a leaf node, some browsers optimize it out and it processes no data!
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.value = 0;
+    analyser.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    dataArrayRef.current = dataArray;
+
+    const updateVolume = () => {
+      if (!analyserRef.current || !dataArrayRef.current) return;
+      analyserRef.current.getByteFrequencyData(dataArrayRef.current as any);
+
+      let maxVal = 0;
+      for (let i = 0; i < bufferLength; i++) {
+        if (dataArrayRef.current[i] > maxVal) {
+          maxVal = dataArrayRef.current[i];
+        }
+      }
+
+      // If suspended, try to resume
+      if (audioContextRef.current?.state === 'suspended') {
+        audioContextRef.current.resume().catch(() => { });
+      }
+
+      // Map it so 0 -> 20%, and ~100+ -> 100% for high sensitivity
+      const intensity = Math.min(1, maxVal / 80);
+
+      const time = Date.now() / 200;
+      const breathing = Math.sin(time) * 5 + 5; // smooth 0 to 10 breathing when silent
+
+      const baseHeight = 20 + intensity * 80 + (intensity < 0.1 ? breathing : 0);
+
+      // Smooth erratic jumps for speech
+      const jitter1 = intensity > 0.1 ? (Math.random() - 0.5) * 20 * intensity : Math.sin(time * 1.1) * 3;
+      const jitter2 = intensity > 0.1 ? (Math.random() - 0.5) * 30 * intensity : Math.cos(time * 1.3) * 4;
+      const jitter3 = intensity > 0.1 ? (Math.random() - 0.5) * 20 * intensity : Math.sin(time * 0.9) * 3;
+
+      const v1 = Math.min(100, Math.max(20, baseHeight * 0.7 + jitter1));
+      const v2 = Math.min(100, Math.max(20, baseHeight * 1.3 + jitter2));
+      const v3 = Math.min(100, Math.max(20, baseHeight * 0.9 + jitter3));
+
+      if (bar1Ref.current) bar1Ref.current.style.height = `${v1}%`;
+      if (bar2Ref.current) bar2Ref.current.style.height = `${v2}%`;
+      if (bar3Ref.current) bar3Ref.current.style.height = `${v3}%`;
+
+      reqRef.current = requestAnimationFrame(updateVolume);
+    };
+
+    updateVolume();
+
+    return () => {
+      if (reqRef.current) cancelAnimationFrame(reqRef.current);
+      if (sourceRef.current) sourceRef.current.disconnect();
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        audioContextRef.current.close().catch(console.error);
+      }
+    };
+  }, [localStream, isMuted]);
 
   return (
     <div className="bg-background min-h-screen flex flex-col font-body-md text-on-background antialiased">
@@ -137,7 +231,7 @@ export default function JoinScreen({
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   {/* Device Dropdowns as ControlBar */}
                   <div className="p-2 rounded-xl flex items-center gap-2 shadow-sm bg-slate-900">
-                    
+
                     {/* Camera Toggle with Device Selector inside DropdownMenu */}
                     <DropdownMenu>
                       <div className="flex bg-white/10 rounded-full hover:bg-white/20 transition-all">
@@ -208,16 +302,16 @@ export default function JoinScreen({
                   {/* Audio Check Animation */}
                   <div className="flex items-center gap-3">
                     {!isMuted && localStream ? (
-                      <div className="flex gap-1 h-3 items-end w-8">
-                        <div className="w-1 bg-secondary rounded-full h-[40%] animate-[bounce_1.2s_infinite]"></div>
-                        <div className="w-1 bg-secondary rounded-full h-[70%] animate-[bounce_1.5s_infinite]"></div>
-                        <div className="w-1 bg-secondary rounded-full h-[30%] animate-[bounce_1.1s_infinite]"></div>
+                      <div className="flex gap-1 h-4 items-center justify-center w-8">
+                        <div ref={bar1Ref} className="w-1.5 bg-secondary rounded-full transition-all duration-75 ease-out" style={{ height: '20%' }}></div>
+                        <div ref={bar2Ref} className="w-1.5 bg-secondary rounded-full transition-all duration-75 ease-out" style={{ height: '20%' }}></div>
+                        <div ref={bar3Ref} className="w-1.5 bg-secondary rounded-full transition-all duration-75 ease-out" style={{ height: '20%' }}></div>
                       </div>
                     ) : (
-                      <div className="flex gap-1 h-3 items-end w-8 opacity-30">
-                        <div className="w-1 bg-slate-400 rounded-full h-[20%]"></div>
-                        <div className="w-1 bg-slate-400 rounded-full h-[20%]"></div>
-                        <div className="w-1 bg-slate-400 rounded-full h-[20%]"></div>
+                      <div className="flex gap-1 h-4 items-center justify-center w-8 opacity-30">
+                        <div className="w-1.5 bg-slate-400 rounded-full h-[20%]"></div>
+                        <div className="w-1.5 bg-slate-400 rounded-full h-[20%]"></div>
+                        <div className="w-1.5 bg-slate-400 rounded-full h-[20%]"></div>
                       </div>
                     )}
                     <span className="text-label-sm font-semibold text-slate-500 uppercase tracking-wide">
