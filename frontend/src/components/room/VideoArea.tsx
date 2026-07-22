@@ -7,6 +7,7 @@ interface VideoAreaProps {
   localName: string;
   remoteName: string;
   isScreenSharing: boolean;
+  isScreenSharePaused: boolean;
   showStats: boolean;
   setShowStats: (show: boolean) => void;
   telemetry: any;
@@ -19,6 +20,7 @@ export default function VideoArea({
   localName,
   remoteName,
   isScreenSharing,
+  isScreenSharePaused,
   showStats,
   setShowStats,
   telemetry,
@@ -28,6 +30,13 @@ export default function VideoArea({
   return (
     <div className="absolute inset-0 z-0">
       <StatsOverlay telemetry={showStats ? telemetry : null} onClose={() => setShowStats(false)} />
+
+      {isScreenSharePaused && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-amber-500/90 text-black px-6 py-2.5 rounded-full font-medium text-sm shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-4">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          Screen sharing is paused while you are on this tab
+        </div>
+      )}
 
       {/* Primary Stage: Remote Video */}
       {status === 'IN_CALL' ? (

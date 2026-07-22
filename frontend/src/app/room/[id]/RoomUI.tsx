@@ -52,6 +52,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
     selectedAudioId,
     selectedVideoId,
     isScreenSharing,
+    isScreenSharePaused,
     chatMessages,
     telemetry,
     initLocalMedia,
@@ -188,6 +189,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
         localName={localName}
         remoteName={remoteName}
         isScreenSharing={isScreenSharing}
+        isScreenSharePaused={isScreenSharePaused}
         showStats={showStats}
         setShowStats={setShowStats}
         telemetry={telemetry}

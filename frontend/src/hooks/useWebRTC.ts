@@ -36,11 +36,17 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
   const [remoteHandRaised, setRemoteHandRaised] = useState(false);
 
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [isScreenSharePaused, setIsScreenSharePaused] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [telemetry, setTelemetry] = useState<Telemetry | null>(null);
 
   const [localName, setLocalName] = useState('');
   const [remoteName, setRemoteName] = useState('');
+
+  const isScreenSharingRef = useRef(false);
+  useEffect(() => {
+    isScreenSharingRef.current = isScreenSharing;
+  }, [isScreenSharing]);
 
   // Device Management State
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
@@ -60,7 +66,21 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
   // Initialize E2EE Worker and cleanup WebRTC connections on unmount
   useEffect(() => {
     e2eeWorkerRef.current = new Worker('/e2ee.worker.js');
+
+    const handleVisibilityChange = () => {
+      if (!isScreenSharingRef.current || !screenTrackRef.current) return;
+      if (document.visibilityState === 'visible') {
+        screenTrackRef.current.enabled = false;
+        setIsScreenSharePaused(true);
+      } else {
+        screenTrackRef.current.enabled = true;
+        setIsScreenSharePaused(false);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       e2eeWorkerRef.current?.terminate();
       pcRef.current?.close();
       wsRef.current?.close();
@@ -406,11 +426,18 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
           const videoTrack = localStream.getVideoTracks()[0];
           if (sender && videoTrack) await sender.replaceTrack(videoTrack);
           setIsScreenSharing(false);
+          setIsScreenSharePaused(false);
           screenTrackRef.current = null;
         };
 
         screenTrackRef.current = screenTrack;
         setIsScreenSharing(true);
+        if (document.visibilityState === 'visible') {
+          screenTrack.enabled = false;
+          setIsScreenSharePaused(true);
+        } else {
+          setIsScreenSharePaused(false);
+        }
       } catch (err) {
         console.error('Error sharing screen:', err);
       }
@@ -518,6 +545,7 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     selectedAudioId,
     selectedVideoId,
     isScreenSharing,
+    isScreenSharePaused,
     chatMessages,
     telemetry,
     initLocalMedia,
