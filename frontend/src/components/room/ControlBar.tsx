@@ -63,8 +63,8 @@ export default function ControlBar({
   switchDevice
 }: ControlBarProps) {
   return (
-    <div className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 z-30 w-full max-w-fit px-margin-mobile">
-      <div className="glass p-2 md:p-3 lg:p-4 rounded-xl flex items-center gap-1.5 md:gap-2 lg:gap-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+    <div className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 z-30 w-full px-2 sm:px-margin-mobile flex justify-center pointer-events-none">
+      <div className="glass p-2 md:p-3 lg:p-4 rounded-xl flex flex-wrap justify-center items-center gap-1.5 md:gap-2 lg:gap-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-auto max-w-full">
 
         {/* Mic Toggle with Device Selector inside DropdownMenu */}
         <DropdownMenu>

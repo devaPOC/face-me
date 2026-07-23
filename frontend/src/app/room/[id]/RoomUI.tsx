@@ -194,7 +194,7 @@ export default function RoomUI({ roomId, initialTopic, isCreator }: { roomId: st
 
   /* ─── IN CALL / WAITING ─── */
   return (
-    <div className="flex flex-col h-screen w-screen bg-black text-white overflow-hidden">
+    <div className="flex flex-col h-[100dvh] w-full bg-black text-white overflow-hidden">
       <RoomHeader 
         title={title} 
         remoteHandRaised={remoteHandRaised} 
