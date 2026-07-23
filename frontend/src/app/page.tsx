@@ -46,7 +46,7 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-mesh min-h-screen flex flex-col font-body-md text-on-background selection:bg-secondary-container selection:text-on-secondary-container">
+    <div className="bg-mesh min-h-screen flex flex-col overflow-hidden font-body-md text-on-background selection:bg-secondary-container selection:text-on-secondary-container">
       {/* TopAppBar */}
       <header className="fixed top-0 left-0 w-full flex justify-between items-center px-margin-mobile md:px-margin-desktop py-5 bg-white/70 backdrop-blur-md z-50 border-b border-slate-100">
         <div className="font-headline-lg text-headline-lg font-extrabold text-primary flex items-center gap-2">

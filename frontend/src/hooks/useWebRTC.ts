@@ -48,6 +48,12 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
     isScreenSharingRef.current = isScreenSharing;
   }, [isScreenSharing]);
 
+  // Keep a ref to the current local stream so the leave handler always has the fresh one
+  const localStreamRef = useRef<MediaStream | null>(null);
+  useEffect(() => {
+    localStreamRef.current = localStream;
+  }, [localStream]);
+
   // Device Management State
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
@@ -326,36 +332,74 @@ export function useWebRTC(roomId: string, isCreator: boolean) {
             setTimeout(() => setRemoteHandRaised(false), 3000);
           }
         } else if (msg.type === 'leave') {
-          if (pcRef.current) pcRef.current.close();
+          // Clean up old peer connection fully
+          if (pcRef.current) {
+            pcRef.current.ontrack = null;
+            pcRef.current.onicecandidate = null;
+            pcRef.current.ondatachannel = null;
+            pcRef.current.onconnectionstatechange = null;
+            pcRef.current.close();
+          }
+          pcRef.current = null;
           setRemoteStream(null);
           setRemoteName('');
 
+          // Clean up old data channel
+          if (dcRef.current) {
+            dcRef.current.onmessage = null;
+            dcRef.current.onopen = null;
+            dcRef.current.close();
+            dcRef.current = null;
+          }
+
+          // Reset telemetry so stats don't carry over
+          lastStatsRef.current = null;
+          setTelemetry(null);
+
+          // Stop screen sharing if active
+          if (screenTrackRef.current) {
+            screenTrackRef.current.stop();
+            screenTrackRef.current = null;
+            setIsScreenSharing(false);
+            setIsScreenSharePaused(false);
+          }
+
+          // Clear chat for a fresh session
+          setChatMessages([]);
+
           if (isCreator) {
+            // Use the CURRENT local stream from the ref, not the stale closure variable
+            const currentStream = localStreamRef.current;
+
             const newPC = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
             pcRef.current = newPC;
 
             const dc = newPC.createDataChannel("faceme-datachannel", { ordered: true });
             setupDataChannel(dc);
 
-            if (stream) {
-              stream.getTracks().forEach((track) => {
-                const sender = newPC.addTrack(track, stream!);
-                if ((window as any).RTCRtpScriptTransform && e2eeWorkerRef.current) {
-                  sender.transform = new (window as any).RTCRtpScriptTransform(e2eeWorkerRef.current, { operation: 'encode', key: roomId });
+            if (currentStream) {
+              // Only add tracks that are still live (not ended)
+              currentStream.getTracks().forEach((track) => {
+                if (track.readyState === 'live') {
+                  newPC.addTrack(track, currentStream);
                 }
               });
             }
 
             newPC.ontrack = (event) => {
               setRemoteStream(event.streams[0]);
-              if ((window as any).RTCRtpScriptTransform && e2eeWorkerRef.current) {
-                event.receiver.transform = new (window as any).RTCRtpScriptTransform(e2eeWorkerRef.current, { operation: 'decode', key: roomId });
-              }
             };
 
             newPC.onicecandidate = (event) => {
               if (event.candidate && wsRef.current?.readyState === WebSocket.OPEN) {
                 wsRef.current.send(JSON.stringify({ type: 'ice_candidate', payload: event.candidate }));
+              }
+            };
+
+            newPC.onconnectionstatechange = () => {
+              if (newPC.connectionState === 'failed') {
+                console.warn('WebRTC connection failed, attempting ICE restart');
+                newPC.restartIce();
               }
             };
 
