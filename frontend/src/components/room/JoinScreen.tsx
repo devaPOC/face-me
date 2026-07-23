@@ -154,46 +154,46 @@ export default function JoinScreen({
   return (
     <div className="bg-background min-h-screen flex flex-col font-body-md text-on-background antialiased">
       {/* Top Navigation */}
-      <header className="sticky top-0 w-full flex justify-between items-center px-margin-mobile md:px-margin-desktop py-sm md:py-5 bg-surface/80 dark:bg-background/80 backdrop-blur-md z-50 border-b border-slate-100">
-        <div className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg font-extrabold text-primary dark:text-primary-fixed flex items-center gap-2 tracking-tight">
-          <span className="material-symbols-outlined text-primary dark:text-primary-fixed text-[28px] md:text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>videocam</span>
+      <header className="fixed top-0 left-0 w-full flex justify-between items-center px-margin-mobile md:px-margin-desktop py-5 bg-white/70 backdrop-blur-md z-50 border-b border-slate-100">
+        <div className="font-headline-lg text-headline-lg font-extrabold text-primary flex items-center gap-2">
+          <span className="material-symbols-outlined text-secondary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>videocam</span>
           <span className="tracking-tight">FaceMe</span>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-grow flex items-center justify-center pt-lg md:pt-32 pb-xl md:pb-24 px-margin-mobile">
-        <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-lg md:gap-16 items-center">
+      <main className="flex-grow flex items-center justify-center pt-32 pb-24 px-margin-mobile">
+        <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
           {/* Left: Content & Branding */}
-          <div className="flex flex-col space-y-6 md:space-y-8 order-2 lg:order-1">
-            <div className="space-y-xs md:space-y-4">
-              <h1 className="font-headline-lg-mobile md:font-display-lg text-headline-lg-mobile md:text-display-lg text-primary leading-tight">{displayTitle}</h1>
-              <p className="font-body-md md:font-body-lg text-body-md md:text-body-lg text-on-surface-variant max-w-md">
+          <div className="flex flex-col space-y-8 order-2 lg:order-1">
+            <div className="space-y-4">
+              <h1 className="font-display-lg text-display-lg text-primary leading-tight">{displayTitle}</h1>
+              <p className="font-body-lg text-body-lg text-on-surface-variant max-w-md">
                 Check your settings before joining the room {roomId}. Everyone is waiting for you.
               </p>
             </div>
 
-            <form onSubmit={handleJoin} className="flex flex-col gap-md md:gap-6">
-              <div className="space-y-xs md:space-y-4">
-                <label className="block font-label-md text-on-surface-variant ml-sm md:ml-1">What&apos;s your name?</label>
+            <form onSubmit={handleJoin} className="flex flex-col gap-6">
+              <div className="space-y-4">
+                <label className="block font-label-md text-slate-500 ml-1">What&apos;s your name?</label>
                 <div className="relative group">
                   <input
-                    className="w-full h-14 md:h-auto px-lg md:px-6 py-4 md:py-4.5 bg-surface-container-lowest md:bg-white border border-outline-variant md:border-slate-200 rounded-full md:rounded-2xl text-body-md focus:ring-4 focus:ring-secondary-container/20 md:focus:ring-secondary/10 focus:border-secondary transition-all outline-none shadow-sm text-primary"
+                    className="w-full px-6 py-4.5 bg-white border border-slate-200 rounded-2xl text-body-md focus:ring-4 focus:ring-secondary/10 focus:border-secondary transition-all outline-none shadow-sm"
                     placeholder="e.g. Julian Anderson"
                     type="text"
                     value={inputName}
                     onChange={(e) => setInputName(e.target.value)}
                     autoFocus
                   />
-                  <div className="absolute right-5 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-secondary transition-colors">
+                  <div className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-secondary transition-colors">
                     <span className="material-symbols-outlined">edit</span>
                   </div>
                 </div>
               </div>
               <button
                 type="submit"
-                className="w-full md:w-max h-14 md:h-auto px-14 py-4 md:py-4.5 bg-secondary text-white rounded-full font-title-md shadow-xl shadow-secondary/25 hover:scale-[1.02] hover:bg-[#FF5A4A] active:scale-95 transition-all duration-300">
+                className="w-full md:w-max px-14 py-4.5 bg-secondary text-white rounded-full font-title-md shadow-xl shadow-secondary/25 hover:scale-[1.02] hover:bg-[#FF5A4A] active:scale-95 transition-all duration-300">
                 {isActuallyCreator ? 'Start Meeting' : 'Knock to Join'}
               </button>
             </form>
@@ -201,9 +201,9 @@ export default function JoinScreen({
 
           {/* Right: Camera Preview Card */}
           <div className="relative order-1 lg:order-2">
-            <div className="bg-surface md:bg-white p-0 md:p-3 rounded-none md:rounded-[32px] shadow-none md:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.12)] border-none md:border md:border-slate-100 flex flex-col">
+            <div className="bg-white p-3 rounded-[32px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.12)] border border-slate-100 flex flex-col">
 
-              <div className="preview-container relative aspect-[3/4] md:aspect-[4/3] rounded-[24px] overflow-hidden bg-primary md:bg-slate-900 group flex items-center justify-center shadow-xl md:shadow-none">
+              <div className="preview-container relative aspect-[4/3] rounded-[24px] overflow-hidden bg-slate-900 group flex items-center justify-center">
                 {localStream && !isVideoOff ? (
                   <video
                     ref={videoRef}
@@ -220,13 +220,13 @@ export default function JoinScreen({
                 )}
 
                 <div className="absolute top-5 left-5 z-10 flex items-center gap-2 bg-black/40 backdrop-blur-xl px-3.5 py-1.5 rounded-full border border-white/20">
-                  <div className={`w-2 h-2 rounded-full ${localStream && !isVideoOff ? 'bg-[#10b981] animate-pulse' : 'bg-red-500'}`}></div>
-                  <span className="text-[10px] uppercase tracking-[0.1em] text-white font-bold">Preview {isVideoOff ? 'Off' : 'Ready'}</span>
+                  <div className={`w-2 h-2 rounded-full ${localStream && !isVideoOff ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+                  <span className="text-[10px] uppercase tracking-[0.1em] text-white font-bold">Preview {isVideoOff ? 'Off' : 'Live'}</span>
                 </div>
               </div>
 
               {/* Device Selectors & Audio Check */}
-              <div className="mt-md md:mt-5 pb-2 flex flex-col gap-4 px-2 md:px-4">
+              <div className="mt-5 pb-2 flex flex-col gap-4 px-4">
 
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   {/* Device Dropdowns as ControlBar */}

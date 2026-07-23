@@ -63,8 +63,8 @@ export default function ControlBar({
   switchDevice
 }: ControlBarProps) {
   return (
-    <div className="absolute bottom-0 md:bottom-8 left-0 md:left-1/2 md:-translate-x-1/2 z-30 w-full px-margin-mobile pb-xl md:pb-0">
-      <div className="glass w-full max-w-md mx-auto md:max-w-fit p-3 md:p-4 rounded-xl flex items-center justify-between md:justify-center gap-2 md:gap-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 w-full max-w-fit px-margin-mobile">
+      <div className="glass p-3 md:p-4 rounded-xl flex items-center gap-2 md:gap-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
 
         {/* Mic Toggle with Device Selector inside DropdownMenu */}
         <DropdownMenu>
@@ -199,8 +199,8 @@ export default function ControlBar({
         {/* End Call */}
         <button
           onClick={handleLeave}
-          className="control-btn w-14 h-14 md:w-auto md:px-8 md:h-14 rounded-full flex items-center justify-center bg-[#EF4444] text-white hover:bg-[#DC2626] shadow-[0_0_20px_rgba(239,68,68,0.4)] md:shadow-lg md:shadow-red-900/20 md:ml-2 cursor-pointer flex-shrink-0">
-          <span className="material-symbols-outlined md:mr-2" style={{ fontVariationSettings: "'FILL' 1" }}>call_end</span>
+          className="control-btn px-6 md:px-8 h-12 md:h-14 rounded-full flex items-center justify-center bg-[#EF4444] text-white hover:bg-[#DC2626] shadow-lg shadow-red-900/20 ml-2 cursor-pointer">
+          <span className="material-symbols-outlined mr-2" style={{ fontVariationSettings: "'FILL' 1" }}>call_end</span>
           <span className="font-label-md text-label-md font-bold uppercase tracking-widest hidden md:inline">End</span>
         </button>
 

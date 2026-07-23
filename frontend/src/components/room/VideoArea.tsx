@@ -69,12 +69,12 @@ export default function VideoArea({
       {/* PIP: Local Video */}
       <div className={
         status === 'IN_CALL'
-          ? 'absolute top-[120px] md:top-auto md:bottom-32 right-margin-mobile md:right-8 z-20 group'
+          ? 'absolute bottom-32 right-8 z-20 group'
           : 'absolute inset-0 z-10 flex items-center justify-center pointer-events-none'
       }>
         <div className={
           status === 'IN_CALL'
-            ? 'w-[100px] h-[150px] md:w-64 md:h-auto md:aspect-video rounded-lg overflow-hidden border border-white/20 md:border-2 md:border-white/90 shadow-2xl transition-transform duration-500 hover:scale-[1.02] cursor-grab active:scale-95'
+            ? 'w-48 md:w-64 aspect-video rounded-lg overflow-hidden border-2 border-white/90 shadow-2xl transition-transform duration-500 hover:scale-[1.02]'
             : 'w-full h-full'
         }>
           <video
