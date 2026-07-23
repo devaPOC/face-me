@@ -162,15 +162,15 @@ export default function JoinScreen({
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-grow flex items-center justify-center pt-32 pb-24 px-margin-mobile">
-        <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <main className="flex-grow flex items-center justify-center pt-24 md:pt-32 pb-16 md:pb-24 px-margin-mobile">
+        <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
 
           {/* Left: Content & Branding */}
           <div className="flex flex-col space-y-8 order-2 lg:order-1">
             <div className="space-y-4">
-              <h1 className="font-display-lg text-display-lg text-primary leading-tight">{displayTitle}</h1>
+              <h1 className="font-display-lg text-headline-lg-mobile md:text-display-lg text-primary leading-tight">{displayTitle}</h1>
               <p className="font-body-lg text-body-lg text-on-surface-variant max-w-md">
-                Check your settings before joining the room {roomId}. Everyone is waiting for you.
+                Check your settings before joining the room <strong>{roomId}</strong>. Everyone is waiting for you.
               </p>
             </div>
 
@@ -201,9 +201,9 @@ export default function JoinScreen({
 
           {/* Right: Camera Preview Card */}
           <div className="relative order-1 lg:order-2">
-            <div className="bg-white p-3 rounded-[32px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.12)] border border-slate-100 flex flex-col">
+            <div className="bg-white p-2 sm:p-3 rounded-[20px] md:rounded-[32px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.12)] border border-slate-100 flex flex-col">
 
-              <div className="preview-container relative aspect-[4/3] rounded-[24px] overflow-hidden bg-slate-900 group flex items-center justify-center">
+              <div className="preview-container relative aspect-[4/3] rounded-[16px] md:rounded-[24px] overflow-hidden bg-slate-900 group flex items-center justify-center">
                 {localStream && !isVideoOff ? (
                   <video
                     ref={videoRef}
@@ -226,9 +226,9 @@ export default function JoinScreen({
               </div>
 
               {/* Device Selectors & Audio Check */}
-              <div className="mt-5 pb-2 flex flex-col gap-4 px-4">
+              <div className="mt-3 sm:mt-5 pb-2 flex flex-col gap-3 sm:gap-4 px-2 sm:px-4">
 
-                <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
                   {/* Device Dropdowns as ControlBar */}
                   <div className="p-2 rounded-xl flex items-center gap-2 shadow-sm bg-slate-900">
 

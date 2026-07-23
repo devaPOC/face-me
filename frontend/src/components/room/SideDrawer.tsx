@@ -50,7 +50,7 @@ export default function SideDrawer({
 
   return (
     <div
-      className={`fixed top-0 h-full w-80 lg:w-96 z-[60] flex flex-col py-6 bg-surface-container-lowest/95 dark:bg-primary/90 backdrop-blur-md shadow-2xl transition-all duration-500 ease-out border-l border-white/10 ${modalOpen ? 'right-0' : '-right-[400px]'}`}
+      className={`fixed top-0 h-full w-full sm:w-80 lg:w-96 z-[60] flex flex-col py-6 bg-surface-container-lowest/95 dark:bg-primary/90 backdrop-blur-md shadow-2xl transition-all duration-500 ease-out border-l border-white/10 ${modalOpen ? 'right-0' : '-right-full sm:-right-[400px]'}`}
       id="sideNav"
     >
       <div className="px-6 pb-4 flex items-center justify-between shrink-0">

@@ -8,7 +8,7 @@ export default function StatsOverlay({ telemetry, onClose }: { telemetry: Teleme
   if (!telemetry) return null;
 
   return (
-    <div className="absolute top-16 left-4 z-50 bg-black/80 backdrop-blur-md border border-white/10 rounded-xl p-4 text-xs font-mono text-gray-300 shadow-2xl w-72 animate-fade-in pointer-events-auto">
+    <div className="absolute top-16 left-4 right-4 sm:right-auto z-50 bg-black/80 backdrop-blur-md border border-white/10 rounded-xl p-4 text-xs font-mono text-gray-300 shadow-2xl sm:w-72 animate-fade-in pointer-events-auto">
       <div className="flex justify-between items-center mb-3 border-b border-white/10 pb-2">
         <h3 className="font-semibold text-white flex items-center gap-1.5">
           <Activity className="w-3.5 h-3.5 text-green-400" />

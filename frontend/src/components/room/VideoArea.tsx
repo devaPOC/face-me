@@ -32,9 +32,10 @@ export default function VideoArea({
       <StatsOverlay telemetry={showStats ? telemetry : null} onClose={() => setShowStats(false)} />
 
       {isScreenSharePaused && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-amber-500/90 text-black px-6 py-2.5 rounded-full font-medium text-sm shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-4">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          Screen sharing is paused while you are on this tab
+        <div className="absolute top-16 md:top-20 left-1/2 -translate-x-1/2 z-50 bg-amber-500/90 text-black px-3 py-2 md:px-6 md:py-2.5 rounded-full font-medium text-xs md:text-sm shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-4">
+          <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <span className="hidden sm:inline">Screen sharing is paused while you are on this tab</span>
+          <span className="sm:hidden">Screen share paused</span>
         </div>
       )}
 
@@ -48,7 +49,7 @@ export default function VideoArea({
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 video-stage-overlay pointer-events-none"></div>
-          <div className="absolute bottom-32 left-8 z-20">
+          <div className="absolute bottom-20 left-3 md:bottom-32 md:left-8 z-20">
             <div className="px-3 py-1 glass rounded-md text-white font-label-sm shadow-md">
               {remoteName}
             </div>
@@ -69,12 +70,12 @@ export default function VideoArea({
       {/* PIP: Local Video */}
       <div className={
         status === 'IN_CALL'
-          ? 'absolute bottom-32 right-8 z-20 group'
+          ? 'absolute bottom-20 right-3 md:bottom-32 md:right-8 z-20 group'
           : 'absolute inset-0 z-10 flex items-center justify-center pointer-events-none'
       }>
         <div className={
           status === 'IN_CALL'
-            ? 'w-48 md:w-64 aspect-video rounded-lg overflow-hidden border-2 border-white/90 shadow-2xl transition-transform duration-500 hover:scale-[1.02]'
+            ? 'w-36 md:w-48 lg:w-64 aspect-video rounded-lg overflow-hidden border-2 border-white/90 shadow-2xl transition-transform duration-500 hover:scale-[1.02]'
             : 'w-full h-full'
         }>
           <video

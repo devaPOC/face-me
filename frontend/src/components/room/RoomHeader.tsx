@@ -13,15 +13,15 @@ export default function RoomHeader({ title, remoteHandRaised, remoteName }: Room
   const value = parts.slice(1).join(': ');
 
   return (
-    <header className="absolute top-6 left-6 right-6 flex justify-between items-start z-20">
+    <header className="absolute top-3 left-3 right-3 md:top-6 md:left-6 md:right-6 flex justify-between items-start z-20">
       
       {/* Pill Container */}
-      <div className="flex items-center gap-4 bg-[#23262B]/90 backdrop-blur-md rounded-full pl-6 pr-2.5 py-2.5 border border-white/10 shadow-xl">
+      <div className="flex items-center gap-2 md:gap-4 bg-[#23262B]/90 backdrop-blur-md rounded-full pl-3 pr-2 py-2 md:pl-6 md:pr-2.5 md:py-2.5 border border-white/10 shadow-xl">
         
         {/* Text Section */}
         <div className="flex items-baseline gap-2">
-          <span className="text-slate-400 font-semibold tracking-wider text-[13px] uppercase">{label}:</span>
-          <span className="text-white font-bold text-[22px] leading-none tracking-tight">{value}</span>
+          <span className="text-slate-400 font-semibold tracking-wider text-[11px] md:text-[13px] uppercase">{label}:</span>
+          <span className="text-white font-bold text-base md:text-[22px] leading-none tracking-tight">{value}</span>
         </div>
         
         {/* Divider */}
@@ -30,7 +30,7 @@ export default function RoomHeader({ title, remoteHandRaised, remoteName }: Room
         {/* Encrypted Badge */}
         <div className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#10B981]/10 border border-[#10B981]/30 rounded-full text-[#10B981] text-sm font-semibold tracking-wide">
           <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>lock</span>
-          Encrypted
+          <span className="hidden sm:inline">Encrypted</span>
         </div>
         
       </div>
