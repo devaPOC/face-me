@@ -54,7 +54,7 @@ export default function PrivacyPolicy() {
           <p className="italic">*All room metadata and signaling memory are automatically purged and erased from server RAM the moment a room becomes empty.*</p>
 
           <h2 className="text-2xl font-bold mt-8 text-primary">3. Server Logs &amp; Analytics</h2>
-          <p>Our infrastructure utilizes standard edge security proxies (Cloudflare Tunnels) to protect against DDoS attacks. Standard server access logs (such as IP addresses, user-agent strings, and request timestamps) may be generated at the edge for network security and Prometheus telemetry. These logs are used purely for service health monitoring and are never sold or used for tracking.</p>
+          <p>Our infrastructure utilizes standard edge security proxies (Cloudflare Tunnels) to protect against DDoS attacks. Standard server access logs (such as IP addresses, user-agent strings, and request timestamps) may be generated at the edge for network security. These logs are used purely for service health monitoring and are never sold or used for tracking.</p>
 
           <h2 className="text-2xl font-bold mt-8 text-primary">4. Cookies &amp; Local Storage</h2>
           <ul className="list-disc pl-5 space-y-2">

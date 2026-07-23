@@ -4,7 +4,7 @@
 
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/tmsankaram)
 
-FaceMe is a production-ready, ultra-low-resource, strict 1-to-1 peer-to-peer video calling application.
+FaceMe is a robust, ultra-low-resource, strict 1-to-1 peer-to-peer video calling application.
 
 It is designed to showcase modern web technologies, including **WebRTC** for direct browser-to-browser media streaming, **Next.js** for a fluid and premium front-end experience, and **Go** for a high-concurrency, zero-persistence signaling backend.
 
