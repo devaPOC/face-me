@@ -68,7 +68,7 @@ export default function Home() {
       </header>
 
       {/* Main Content Canvas */}
-      <main className="flex-1 flex flex-col items-center justify-center px-margin-mobile py-8">
+      <main className="flex-1 flex flex-col items-center justify-start md:justify-center px-margin-mobile pt-24 pb-8 md:py-8">
         <div className="w-full max-w-[440px] glass-card rounded-lg p-5 sm:p-8 shadow-[0_20px_40px_rgba(30,41,59,0.08)] text-center space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
           {/* Headline & Value Prop */}
