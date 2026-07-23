@@ -13,10 +13,10 @@ export default function RoomHeader({ title, remoteHandRaised, remoteName }: Room
   const value = parts.slice(1).join(': ');
 
   return (
-    <header className="absolute top-6 left-6 right-6 flex justify-between items-start z-20">
+    <header className="absolute top-0 md:top-6 left-0 md:left-6 right-0 md:right-6 flex justify-center md:justify-between items-start z-20 pt-xl md:pt-0 pointer-events-none">
       
-      {/* Pill Container */}
-      <div className="flex items-center gap-4 bg-[#23262B]/90 backdrop-blur-md rounded-full pl-6 pr-2.5 py-2.5 border border-white/10 shadow-xl">
+      {/* Desktop Pill Container */}
+      <div className="hidden md:flex items-center gap-4 bg-[#23262B]/90 backdrop-blur-md rounded-full pl-6 pr-2.5 py-2.5 border border-white/10 shadow-xl pointer-events-auto">
         
         {/* Text Section */}
         <div className="flex items-baseline gap-2">
@@ -35,8 +35,24 @@ export default function RoomHeader({ title, remoteHandRaised, remoteName }: Room
         
       </div>
 
+      {/* Mobile Layout */}
+      <div className="flex md:hidden flex-col items-center w-full relative pointer-events-auto px-margin-mobile">
+        <div className="glass px-md py-xs rounded-full flex items-center gap-xs">
+          <span className="material-symbols-outlined text-green-400 text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>lock</span>
+          <span className="font-label-sm text-label-sm text-white uppercase tracking-wider">End-to-End Encrypted</span>
+        </div>
+        {/* Participant Info */}
+        <div className="absolute left-margin-mobile top-0 flex flex-col items-start">
+          <h1 className="font-title-md text-title-md text-white drop-shadow-md">{remoteName || value}</h1>
+          <div className="flex items-center gap-xs">
+            <span className="w-2 h-2 rounded-full bg-secondary-container"></span>
+            <span className="font-label-sm text-label-sm text-white/70">Live</span>
+          </div>
+        </div>
+      </div>
+
       {remoteHandRaised && (
-        <Badge variant="default" className="bg-amber-500 text-black font-semibold shadow-lg animate-bounce">
+        <Badge variant="default" className="bg-amber-500 text-black font-semibold shadow-lg animate-bounce pointer-events-auto mt-16 md:mt-0 absolute md:static top-0 right-margin-mobile">
           ✋ {remoteName} raised hand
         </Badge>
       )}

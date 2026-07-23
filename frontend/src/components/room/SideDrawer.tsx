@@ -50,10 +50,18 @@ export default function SideDrawer({
 
   return (
     <div
-      className={`fixed top-0 h-full w-80 lg:w-96 z-[60] flex flex-col py-6 bg-surface-container-lowest/95 dark:bg-primary/90 backdrop-blur-md shadow-2xl transition-all duration-500 ease-out border-l border-white/10 ${modalOpen ? 'right-0' : '-right-[400px]'}`}
+      className={`fixed z-[60] flex flex-col bg-surface-container-lowest/95 dark:bg-primary/90 backdrop-blur-md shadow-2xl transition-all duration-500 ease-out border-white/10 
+        bottom-0 left-0 right-0 h-[85vh] rounded-t-2xl py-2 md:rounded-none
+        md:top-0 md:bottom-auto md:left-auto md:h-full md:w-80 lg:w-96 md:border-l md:py-6
+        ${modalOpen ? 'translate-y-0 md:right-0' : 'translate-y-full md:translate-y-0 md:-right-[400px]'}`}
       id="sideNav"
     >
-      <div className="px-6 pb-4 flex items-center justify-between shrink-0">
+      {/* Drawer Handle (Mobile only) */}
+      <div className="md:hidden w-full flex justify-center pt-2 pb-4 shrink-0">
+        <div className="w-12 h-1.5 bg-outline-variant/50 rounded-full"></div>
+      </div>
+
+      <div className="px-6 pb-4 flex items-center justify-between shrink-0 border-b border-surface-container-highest md:border-none">
         <div>
           <h3 className="font-headline-lg text-[24px] text-primary dark:text-primary-fixed-dim">
             {activeTab === 'chat' ? 'In-call Messages' : 'People'}
