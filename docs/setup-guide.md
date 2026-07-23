@@ -58,7 +58,7 @@ To run both services side-by-side locally, open two terminal sessions:
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 > [!NOTE]
-> **Dev Proxy Configuration:** The Next.js dev server has a custom rewrite configuration in [next.config.ts](file:///Users/deva/webapps/portfolio/face-me/frontend/next.config.ts) that forwards all requests to `/api/*` and `/ws/*` automatically to the local Go server at `http://localhost:8080`.
+> **Dev Proxy Configuration:** The Next.js dev server has a custom rewrite configuration in [next.config.ts](../frontend/next.config.ts) that forwards all requests to `/api/*` and `/ws/*` automatically to the local Go server at `http://localhost:8080`.
 
 ### 2.3 Running with Docker Compose
 

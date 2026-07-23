@@ -1,5 +1,9 @@
 # FaceMe: Peer-to-Peer FaceTime Clone
 
+<script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="tmsankaram" data-color="#FFDD00" data-emoji="☕"  data-font="Lato" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/tmsankaram)
+
 FaceMe is a production-ready, ultra-low-resource, strict 1-to-1 peer-to-peer video calling application.
 
 It is designed to showcase modern web technologies, including **WebRTC** for direct browser-to-browser media streaming, **Next.js** for a fluid and premium front-end experience, and **Go** for a high-concurrency, zero-persistence signaling backend.
@@ -109,6 +113,12 @@ graph LR
 
 Explore the sub-documentation files to learn more about the internals of FaceMe:
 
-1. **[System Design & Architecture](file:///Users/deva/webapps/portfolio/face-me/docs/architecture.md):** Detailed explanations of the WebRTC sequence flow, state machines, and the Cloudflare Tunnel deployment topology.
-2. **[Developer Setup & Deployment Guide](file:///Users/deva/webapps/portfolio/face-me/docs/setup-guide.md):** Prerequisites, local execution commands, Docker setups, Secure Context requirements, and private server installation via `cloudflared`.
-3. **[API & Signaling Specifications](file:///Users/deva/webapps/portfolio/face-me/docs/api-spec.md):** JSON payload structures for WebSocket communication, room creation endpoints, and connection logic.
+1. **[System Design & Architecture](./docs/architecture.md):** Detailed explanations of the WebRTC sequence flow, state machines, and the Cloudflare Tunnel deployment topology.
+2. **[Developer Setup & Deployment Guide](./docs/setup-guide.md):** Prerequisites, local execution commands, Docker setups, Secure Context requirements, and private server installation via `cloudflared`.
+3. **[API & Signaling Specifications](./docs/api-spec.md):** JSON payload structures for WebSocket communication, room creation endpoints, and connection logic.
+
+---
+
+## 📜 License
+
+This project is licensed under the [MIT License](LICENSE).
